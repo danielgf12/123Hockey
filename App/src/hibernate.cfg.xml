@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+
+        <!-- Conexión a MySQL -->
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/123hockey</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">123HockeyBBDD</property>
+
+        <!-- Dialecto -->
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
+
+        <!-- Mostrar SQL por consola -->
+        <property name="hibernate.show_sql">true</property>
+
+        <!-- Crear las tablas automáticamente si no existen -->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <!-- Clases anotadas -->
+        <mapping class="main.model.Usuario"/>
+        <mapping class="main.model.Equipo"/>
+        <mapping class="main.model.JugadorInfo"/>
+        <mapping class="main.model.Entrenamiento"/>
+        <mapping class="main.model.Partido"/>
+        <mapping class="main.model.Asistencia"/>
+        <mapping class="main.model.Alineacion"/>
+        <mapping class="main.model.EquipoJugador"/>
+
+
+    </session-factory>
+</hibernate-configuration>
