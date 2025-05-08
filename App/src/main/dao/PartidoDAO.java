@@ -113,4 +113,20 @@ public class PartidoDAO {
             return null;
         }
     }
+
+    // import main.model.Alineacion;  // la entidad que mapea la tabla Alineacion
+    public int contarPorJugador(int idJugador) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Long c = session.createQuery(
+                    "SELECT COUNT(a) FROM Alineacion a WHERE a.usuario.id = :idJugador",
+                    Long.class)
+                    .setParameter("idJugador", idJugador)
+                    .uniqueResult();
+            return c != null ? c.intValue() : 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
 }

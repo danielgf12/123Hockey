@@ -3,7 +3,9 @@ package main.controller;
 import main.dao.UsuarioDAO;
 import main.model.Usuario;
 import main.util.HashUtil;
+import main.view.InicioDelegadoVentana;
 import main.view.InicioEntrenadorVentana;
+import main.view.InicioJugadorVentana;
 // importar aquí InicioDelegadoVentana e InicioJugadorVentana cuando las tengas
 
 import javax.swing.*;
@@ -38,10 +40,10 @@ public class LoginController {
                 new InicioEntrenadorVentana(usuario);
                 break;
             case DELEGADO:
-                // new InicioDelegadoVentana(usuario);
+                 new InicioDelegadoVentana(usuario);
                 break;
             case JUGADOR:
-                // new InicioJugadorVentana(usuario);
+                 new InicioJugadorVentana(usuario);
                 break;
         }
         return usuarioInput;
