@@ -4,6 +4,9 @@ import main.dao.UsuarioDAO;
 import main.model.Usuario;
 import main.model.Usuario.Rol;
 import main.util.HashUtil;
+import main.view.InicioDelegadoVentana;
+import main.view.InicioEntrenadorVentana;
+import main.view.InicioJugadorVentana;
 
 public class RegistroController {
 

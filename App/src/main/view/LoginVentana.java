@@ -8,10 +8,22 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URL;
 
 public class LoginVentana extends JFrame {
 
     public LoginVentana() {
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+
+        int mX     = (int)(screen.width  * 0.04);
+        int headerH = (int)(screen.height * 0.07);
+        int iconW  = headerH - 16;
+        int iconH  = headerH - 16;
+
+        Image appIcon = loadIcon("logoSinFondo.png", 32, 32).getImage();
+        setIconImage(appIcon);
+
+
         int arcBtn   = 45 / 3;            // radio de las esquinas (~33% de la altura)
         int bordBtn  = 2;                   // grosor del borde
         Color normalBg     = new Color(49, 109, 233);
@@ -284,5 +296,13 @@ public class LoginVentana extends JFrame {
         });
 
         setVisible(true);
+    }
+
+    private ImageIcon loadIcon(String name, int w, int h) {
+        URL u = getClass().getClassLoader().getResource("assets/" + name);
+        Image img = (u != null)
+                ? new ImageIcon(u).getImage()
+                : new ImageIcon("src/assets/" + name).getImage();
+        return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH));
     }
 }

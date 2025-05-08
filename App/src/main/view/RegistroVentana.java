@@ -10,10 +10,21 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.net.URL;
 
 public class RegistroVentana extends JFrame {
 
     public RegistroVentana() {
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+
+        int mX     = (int)(screen.width  * 0.04);
+        int headerH = (int)(screen.height * 0.07);
+        int iconW  = headerH - 16;
+        int iconH  = headerH - 16;
+
+        Image appIcon = loadIcon("logoSinFondo.png", 32, 32).getImage();
+        setIconImage(appIcon);
+
         int arcField      = 15;             // radio de las esquinas de los campos
         int bordField     = 1;              // grosor de los bordes de los campos
         Color fieldBg     = new Color(18, 18, 18);
@@ -112,7 +123,18 @@ public class RegistroVentana extends JFrame {
             );
             if (u != null) {
                 dispose();
-                new LoginVentana();
+
+                switch (u.getRol()) {
+                    case ENTRENADOR:
+                        new InicioEntrenadorVentana(u);
+                        break;
+                    case DELEGADO:
+                        new InicioDelegadoVentana(u);
+                        break;
+                    case JUGADOR:
+                        new InicioJugadorVentana(u);
+                        break;
+                }
             } else {
                 JOptionPane.showMessageDialog(this,
                         "Error en el registro. Revisa los datos.",
@@ -140,6 +162,14 @@ public class RegistroVentana extends JFrame {
         });
 
         setVisible(true);
+    }
+
+    private ImageIcon loadIcon(String name, int w, int h) {
+        URL u = getClass().getClassLoader().getResource("assets/" + name);
+        Image img = (u != null)
+                ? new ImageIcon(u).getImage()
+                : new ImageIcon("src/assets/" + name).getImage();
+        return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH));
     }
 
     private JTextField createField(String placeholder, int x, int y, int w,
@@ -259,5 +289,6 @@ public class RegistroVentana extends JFrame {
             }
         });
         return p;
+
     }
 }
