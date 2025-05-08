@@ -7,107 +7,133 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.RoundRectangle2D;
 
 public class RegistroVentana extends JFrame {
 
     public RegistroVentana() {
+        int arcField      = 15;             // radio de las esquinas de los campos
+        int bordField     = 1;              // grosor de los bordes de los campos
+        Color fieldBg     = new Color(18, 18, 18);
+        Color fieldBorder = new Color(49, 109, 233);
+
+        int arcBtn   = 45 / 3;              // radio de las esquinas del botón
+        int bordBtn  = 2;                   // grosor del borde del botón
+        Color normalBg     = new Color(49, 109, 233);
+        Color hoverBg      = new Color(52, 115, 255);
+        Color pressBg      = new Color(142, 173, 233);
+
         setTitle("123Hockey - Registro");
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        getContentPane().setBackground(new Color(18, 18, 18));
         setLayout(null);
-        getContentPane().setBackground(new Color(18, 18, 18)); // Fondo oscuro
 
-        // ---------- Imagen a la izquierda
+        // ---------- Imagen izquierda escalada
         ImageIcon icono = new ImageIcon("src/assets/logoSinFondo.png");
         Image imagenEscalada = icono.getImage().getScaledInstance(420, 420, Image.SCALE_SMOOTH);
         JLabel imagen = new JLabel(new ImageIcon(imagenEscalada));
-        imagen.setBounds(200, 180, 420, 420);
+        imagen.setBounds(175, 170, 420, 420);
         add(imagen);
 
         // ---------- Título encima de la imagen
         JLabel titulo = new JLabel("123HOCKEY!");
-        titulo.setFont(new Font("Arial Black", Font.BOLD, 52));
+        titulo.setFont(new Font("Arial Black", Font.BOLD, 52)); // Horizon simulada
         titulo.setForeground(new Color(49, 109, 233));
-        titulo.setBounds(230, 100, 500, 60);
+        titulo.setBounds(185, 90, 500, 60); // centrado arriba de la imagen
         add(titulo);
 
-        // ---------- Subtítulo
         JLabel subtitulo = new JLabel("Regístrate aquí");
         subtitulo.setFont(new Font("Segoe UI", Font.BOLD, 26));
-        subtitulo.setForeground(new Color(49, 109, 233));
-        subtitulo.setBounds(880, 80, 300, 40);
+        subtitulo.setForeground(new Color(195,195,195));
+        subtitulo.setBounds(800, 90, 300, 40);
         add(subtitulo);
 
-        // ---------- Campos del formulario
-        JTextField nombre = crearCampo("Nombre", 800, 140);
-        JTextField apellido1 = crearCampoApellido("Apellido 1", 800, 200);
-        JTextField apellido2 = crearCampoApellido("Apellido 2", 1005, 200);
-        JTextField email = crearCampo("Email", 800, 260);
-        JTextField telefono = crearCampo("Teléfono", 800, 320);
-        JPasswordField contrasena = crearCampoPassword("Contraseña", 800, 380);
-        JPasswordField confirmar = crearCampoPassword("Confirmar", 1005, 380);
+        // ---------- Campos redondeados con placeholder
+        JTextField nombre      = createField("Nombre",        700, 150, 380, arcField, bordField, fieldBg, fieldBorder);
+        JTextField apellido1   = createField("Apellido 1",    700, 210, 180, arcField, bordField, fieldBg, fieldBorder);
+        JTextField apellido2   = createField("Apellido 2",    900,210, 180, arcField, bordField, fieldBg, fieldBorder);
+        JTextField email       = createField("Email",         700, 270, 380, arcField, bordField, fieldBg, fieldBorder);
+        JTextField telefono    = createField("Teléfono",      700, 330, 380, arcField, bordField, fieldBg, fieldBorder);
+        JPasswordField pwd     = createPasswordField("Contraseña",700, 390, 180, arcField, bordField, fieldBg, fieldBorder);
+        JPasswordField confirm = createPasswordField("Confirmar", 900,390, 180, arcField, bordField, fieldBg, fieldBorder);
 
-        // Añadirlos
         add(nombre);
         add(apellido1);
         add(apellido2);
         add(email);
         add(telefono);
-        add(contrasena);
-        add(confirmar);
+        add(pwd);
+        add(confirm);
 
-        // ---------- Botón registrar
-        JButton btnRegistrar = new JButton("Registrarse");
-        btnRegistrar.setBounds(800, 440, 380, 45);
-        btnRegistrar.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        btnRegistrar.setBackground(new Color(49, 109, 233));
-        btnRegistrar.setForeground(Color.WHITE);
+        // ---------- Botón redondeado “Registrarse”
+        JButton btnRegistrar = new JButton("Registrarse") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                int w = getWidth(), h = getHeight();
+                Graphics2D g2 = (Graphics2D)g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                ButtonModel m = getModel();
+                Color bg = m.isPressed() ? pressBg :
+                        m.isRollover()? hoverBg : normalBg;
+
+                // fondo
+                g2.setColor(bg);
+                g2.fillRoundRect(0, 0, w, h, arcBtn, arcBtn);
+
+                // borde
+                g2.setStroke(new BasicStroke(bordBtn));
+                g2.setColor(bg);
+                g2.drawRoundRect(bordBtn/2, bordBtn/2, w-bordBtn, h-bordBtn, arcBtn, arcBtn);
+
+                g2.dispose();
+                super.paintComponent(g);
+            }
+            @Override protected void paintBorder(Graphics g) { /* nada */ }
+        };
+        btnRegistrar.setOpaque(false);
+        btnRegistrar.setContentAreaFilled(false);
         btnRegistrar.setFocusPainted(false);
+        btnRegistrar.setBorderPainted(false);
+        btnRegistrar.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        btnRegistrar.setForeground(Color.WHITE);
+        btnRegistrar.setBounds(700, 450, 380, 45);
         add(btnRegistrar);
 
-        // ---------- Enlace inferior
-        JLabel login = new JLabel("<html><u>¿Ya tienes cuenta? Pulsa aquí para iniciar sesión</u></html>");
-        login.setForeground(new Color(49, 109, 233));
-        login.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        login.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        login.setBounds(800, 500, 450, 30);
-        add(login);
-
-        // ---------- Lógica del botón
         btnRegistrar.addActionListener(e -> {
             RegistroController rc = new RegistroController();
-            Usuario nuevoUsuario = rc.registrarEntrenador(
-                    nombre.getText(),
-                    apellido1.getText(),
-                    apellido2.getText(),
-                    email.getText(),
-                    telefono.getText(),
-                    new String(contrasena.getPassword()),
-                    new String(confirmar.getPassword())
+            Usuario u = rc.registrarEntrenador(
+                    nombre.getText(), apellido1.getText(), apellido2.getText(),
+                    email.getText(), telefono.getText(),
+                    new String(pwd.getPassword()), new String(confirm.getPassword())
             );
-
-            if (nuevoUsuario != null) {
-                dispose(); // Cerrar ventana de registro
-                switch (nuevoUsuario.getRol()) {
-                    case ENTRENADOR:
-                        new InicioEntrenadorVentana(nuevoUsuario);
-                        break;
-                    case DELEGADO:
-                        // new InicioDelegadoVentana(nuevoUsuario);
-                        break;
-                    case JUGADOR:
-                        // new InicioJugadorVentana(nuevoUsuario);
-                        break;
-                }
+            if (u != null) {
+                dispose();
+                new LoginVentana();
             } else {
-                JOptionPane.showMessageDialog(this, "❌ Error en el registro. Revisa los datos.");
+                JOptionPane.showMessageDialog(this,
+                        "Error en el registro. Revisa los datos.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
+        // ---------- Enlace inferior
+        JLabel loginLink = new JLabel(
+                "<html>"
+                        + "<span style='color:#999999;'>¿Ya tienes cuenta? </span>"
+                        + "<span style='color:#318DE1; text-decoration:underline; cursor:hand;'>Pulsa aquí para iniciar sesión</span>"
+                        + "</html>"
+        );
+        loginLink.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        loginLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        loginLink.setBounds(700, 510, 450, 30);
+        add(loginLink);
 
-        // ---------- Volver al login
-        login.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
+        loginLink.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
                 dispose();
                 new LoginVentana();
             }
@@ -116,90 +142,122 @@ public class RegistroVentana extends JFrame {
         setVisible(true);
     }
 
-    // Método para crear campos de texto con placeholder
-    private JTextField crearCampoApellido(String placeholder, int x, int y) {
-        JTextField campo = new JTextField(placeholder);
-        campo.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        campo.setForeground(Color.GRAY);
-        campo.setBackground(new Color(18, 18, 18));
-        campo.setBounds(x, y, 200, 45);
-        campo.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2, true));
+    private JTextField createField(String placeholder, int x, int y, int w,
+                                   int arc, int bord,
+                                   Color bg, Color border) {
+        JTextField f = new JTextField(placeholder) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D)g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(bg);
+                g2.fill(new RoundRectangle2D.Float(0,0,getWidth(),getHeight(),arc,arc));
+                g2.dispose();
+                super.paintComponent(g);
+            }
+            @Override
+            protected void paintBorder(Graphics g) {
+                Graphics2D g2 = (Graphics2D)g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setStroke(new BasicStroke(bord));
+                g2.setColor(border);
+                g2.draw(new RoundRectangle2D.Float(bord/2f,bord/2f,
+                        getWidth()-bord, getHeight()-bord, arc, arc));
+                g2.dispose();
+            }
+        };
+        f.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        f.setForeground(Color.GRAY);
+        f.setBackground(bg);
+        f.setOpaque(false);
+        f.setBorder(BorderFactory.createEmptyBorder(0,12,0,12));
+        f.setBounds(x, y, w, 45);
 
-        campo.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                if (campo.getText().equals(placeholder)) {
-                    campo.setText("");
-                    campo.setForeground(Color.BLACK);
+        // click→focus
+        f.setFocusable(false);
+        f.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) {
+                f.setFocusable(true);
+                f.requestFocusInWindow();
+            }
+        });
+        f.addFocusListener(new FocusAdapter() {
+            @Override public void focusGained(FocusEvent e) {
+                if (f.getText().equals(placeholder)) {
+                    f.setText("");
+                    f.setForeground(Color.WHITE);
                 }
             }
-
-            public void focusLost(FocusEvent e) {
-                if (campo.getText().isEmpty()) {
-                    campo.setText(placeholder);
-                    campo.setForeground(Color.GRAY);
+            @Override public void focusLost(FocusEvent e) {
+                if (f.getText().isEmpty()) {
+                    f.setText(placeholder);
+                    f.setForeground(Color.GRAY);
                 }
             }
         });
-
-        return campo;
+        return f;
     }
 
-    private JTextField crearCampo(String placeholder, int x, int y) {
-        JTextField campo = new JTextField(placeholder);
-        campo.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        campo.setForeground(Color.GRAY);
-        campo.setBackground(new Color(18, 18, 18));
-        campo.setBounds(x, y, 380, 45);
-        campo.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2, true));
+    private JPasswordField createPasswordField(String placeholder, int x, int y, int w,
+                                               int arc, int bord,
+                                               Color bg, Color border) {
+        JPasswordField p = new JPasswordField(placeholder) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D)g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(bg);
+                g2.fill(new RoundRectangle2D.Float(0,0,getWidth(),getHeight(),arc,arc));
+                g2.dispose();
+                super.paintComponent(g);
+            }
+            @Override
+            protected void paintBorder(Graphics g) {
+                Graphics2D g2 = (Graphics2D)g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setStroke(new BasicStroke(bord));
+                g2.setColor(border);
+                g2.draw(new RoundRectangle2D.Float(bord/2f,bord/2f,
+                        getWidth()-bord,getHeight()-bord,arc,arc));
+                g2.dispose();
+            }
+        };
+        p.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        p.setForeground(Color.GRAY);
+        p.setEchoChar((char)0);
+        p.setBackground(bg);
+        p.setOpaque(false);
+        p.setBorder(BorderFactory.createEmptyBorder(0,12,0,12));
+        p.setBounds(x, y, w, 45);
 
-        campo.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                if (campo.getText().equals(placeholder)) {
-                    campo.setText("");
-                    campo.setForeground(Color.BLACK);
+        // click→focus + placeholder
+        p.setFocusable(false);
+        p.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) {
+                p.setFocusable(true);
+                p.requestFocusInWindow();
+            }
+        });
+        p.addFocusListener(new FocusAdapter() {
+            @Override public void focusGained(FocusEvent e) {
+                if (String.valueOf(p.getPassword()).equals(placeholder)) {
+                    p.setText("");
+                    p.setEchoChar('•');
+                    p.setForeground(Color.WHITE);
                 }
             }
-
-            public void focusLost(FocusEvent e) {
-                if (campo.getText().isEmpty()) {
-                    campo.setText(placeholder);
-                    campo.setForeground(Color.GRAY);
+            @Override public void focusLost(FocusEvent e) {
+                if (String.valueOf(p.getPassword()).isEmpty()) {
+                    p.setText(placeholder);
+                    p.setEchoChar((char)0);
+                    p.setForeground(Color.GRAY);
                 }
             }
         });
-
-        return campo;
-    }
-
-
-    // Método para campos de contraseña con placeholder
-    private JPasswordField crearCampoPassword(String placeholder, int x, int y) {
-        JPasswordField campo = new JPasswordField(placeholder);
-        campo.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        campo.setForeground(Color.GRAY);
-        campo.setEchoChar((char) 0);
-        campo.setBackground(new Color(18, 18, 18));
-        campo.setBounds(x, y, 200, 45);
-        campo.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2, true));
-
-        campo.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                if (String.valueOf(campo.getPassword()).equals(placeholder)) {
-                    campo.setText("");
-                    campo.setEchoChar('•');
-                    campo.setForeground(Color.BLACK);
-                }
-            }
-
-            public void focusLost(FocusEvent e) {
-                if (String.valueOf(campo.getPassword()).isEmpty()) {
-                    campo.setText(placeholder);
-                    campo.setEchoChar((char) 0);
-                    campo.setForeground(Color.GRAY);
-                }
-            }
-        });
-
-        return campo;
+        return p;
     }
 }

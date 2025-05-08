@@ -6,10 +6,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class LoginVentana extends JFrame {
 
     public LoginVentana() {
+        int arcBtn   = 45 / 3;            // radio de las esquinas (~33% de la altura)
+        int bordBtn  = 2;                   // grosor del borde
+        Color normalBg     = new Color(49, 109, 233);
+        Color normalBorder = new Color(49, 109, 233);
+        Color hoverBg      = new Color(52, 115, 255);
+        Color hoverBorder  = new Color(52, 115, 255);
+        Color pressBg      = new Color(142, 173, 233);
+        Color pressBorder  = new Color(142, 173, 233);
+
         setTitle("123Hockey - Login");
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Pantalla completa
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -20,37 +31,81 @@ public class LoginVentana extends JFrame {
         ImageIcon icono = new ImageIcon("src/assets/logoSinFondo.png");
         Image imagenEscalada = icono.getImage().getScaledInstance(420, 420, Image.SCALE_SMOOTH);
         JLabel imagen = new JLabel(new ImageIcon(imagenEscalada));
-        imagen.setBounds(200, 180, 420, 420);
+        imagen.setBounds(175, 170, 420, 420);
         add(imagen);
 
         // ---------- Título encima de la imagen
         JLabel titulo = new JLabel("123HOCKEY!");
         titulo.setFont(new Font("Arial Black", Font.BOLD, 52)); // Horizon simulada
         titulo.setForeground(new Color(49, 109, 233));
-        titulo.setBounds(230, 100, 500, 60); // centrado arriba de la imagen
+        titulo.setBounds(185, 90, 500, 60); // centrado arriba de la imagen
         add(titulo);
 
         // ---------- "Inicia sesión"
         JLabel loginLabel = new JLabel("Inicia sesión");
         loginLabel.setFont(new Font("Segoe UI", Font.BOLD, 26)); // Poppins simulada
-        loginLabel.setForeground(new Color(49, 109, 233));
+        loginLabel.setForeground(new Color(195, 195, 195));
         loginLabel.setBounds(825, 170, 300, 40);
         add(loginLabel);
 
         // ---------- Campo de usuario
-        JTextField campoUsuario = new JTextField("Nombre de usuario");
+        // colores y medidas “globales” para tu login
+        int arcField = 15;             // radio de la curva
+        int bordField = 1;             // grosor del borde
+        Color fieldBg     = new Color(18, 18, 18);
+        Color fieldBorder = new Color(49, 109, 233);
+
+        JTextField campoUsuario = new JTextField("Nombre de usuario") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                int w = getWidth(), h = getHeight();
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Fondo redondeado
+                g2.setColor(fieldBg);
+                g2.fillRoundRect(0, 0, w, h, arcField, arcField);
+
+                g2.dispose();
+                super.paintComponent(g);
+            }
+
+            @Override
+            protected void paintBorder(Graphics g) {
+                int w = getWidth(), h = getHeight();
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Borde redondeado
+                g2.setStroke(new BasicStroke(bordField));
+                g2.setColor(fieldBorder);
+                double off = bordField / 2.0;
+                g2.drawRoundRect((int)off, (int)off, w - bordField, h - bordField, arcField, arcField);
+
+                g2.dispose();
+            }
+        };
         campoUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         campoUsuario.setForeground(Color.GRAY);
-        campoUsuario.setBackground(new Color(18, 18, 18));
+        campoUsuario.setBackground(fieldBg);
+        campoUsuario.setOpaque(false);                     // para que no pinte el fondo rectangular
+        campoUsuario.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 10)); // márgenes interiores
         campoUsuario.setBounds(700, 230, 400, 45);
-        campoUsuario.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2, true));
         add(campoUsuario);
 
+        campoUsuario.setFocusable(false);
+        campoUsuario.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                campoUsuario.setFocusable(true);
+                campoUsuario.requestFocusInWindow();
+            }
+        });
         campoUsuario.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 if (campoUsuario.getText().equals("Nombre de usuario")) {
                     campoUsuario.setText("");
-                    campoUsuario.setForeground(Color.BLACK);
+                    campoUsuario.setForeground(Color.WHITE);
                 }
             }
 
@@ -63,21 +118,79 @@ public class LoginVentana extends JFrame {
         });
 
         // ---------- Campo de contraseña
-        JPasswordField campoContrasena = new JPasswordField("Contraseña");
+        JPasswordField campoContrasena = new JPasswordField("Contraseña") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                int w = getWidth(), h = getHeight();
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Fondo redondeado
+                g2.setColor(fieldBg);
+                g2.fillRoundRect(0, 0, w, h, arcField, arcField);
+
+                g2.dispose();
+                super.paintComponent(g);
+            }
+
+            @Override
+            protected void paintBorder(Graphics g) {
+                int w = getWidth(), h = getHeight();
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Borde redondeado
+                g2.setStroke(new BasicStroke(bordField));
+                g2.setColor(fieldBorder);
+                double off = bordField / 2.0;
+                g2.drawRoundRect((int)off, (int)off, w - bordField, h - bordField, arcField, arcField);
+
+                g2.dispose();
+            }
+        };
+
         campoContrasena.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         campoContrasena.setForeground(Color.GRAY);
-        campoContrasena.setBackground(new Color(18, 18, 18));
-        campoContrasena.setEchoChar((char) 0);
+        campoContrasena.setBackground(fieldBg);
+        campoContrasena.setEchoChar((char)0);              // placeholder inicial
+        campoContrasena.setOpaque(false);
+        campoContrasena.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
         campoContrasena.setBounds(700, 290, 400, 45);
-        campoContrasena.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2, true));
         add(campoContrasena);
+
+// Y luego tu FocusListener para placeholder, exactamente igual que antes:
+        campoContrasena.addFocusListener(new FocusAdapter() {
+            public void focusGained(FocusEvent e) {
+                if (String.valueOf(campoContrasena.getPassword()).equals("Contraseña")) {
+                    campoContrasena.setText("");
+                    campoContrasena.setEchoChar('•');
+                    campoContrasena.setForeground(Color.WHITE);
+                }
+            }
+            public void focusLost(FocusEvent e) {
+                if (String.valueOf(campoContrasena.getPassword()).isEmpty()) {
+                    campoContrasena.setText("Contraseña");
+                    campoContrasena.setEchoChar((char)0);
+                    campoContrasena.setForeground(Color.GRAY);
+                }
+            }
+        });
+
+        campoContrasena.setFocusable(false);
+        campoContrasena.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                campoContrasena.setFocusable(true);
+                campoContrasena.requestFocusInWindow();
+            }
+        });
 
         campoContrasena.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 if (String.valueOf(campoContrasena.getPassword()).equals("Contraseña")) {
                     campoContrasena.setText("");
                     campoContrasena.setEchoChar('•');
-                    campoContrasena.setForeground(Color.BLACK);
+                    campoContrasena.setForeground(Color.white);
                 }
             }
 
@@ -91,21 +204,54 @@ public class LoginVentana extends JFrame {
         });
 
         // ---------- Botón Entrar
-        JButton btnEntrar = new JButton("Entrar");
+        JButton btnEntrar = new JButton("Entrar") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                int w = getWidth(), h = getHeight(), arc = arcBtn;
+                Graphics2D g2 = (Graphics2D)g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+
+                ButtonModel m = getModel();
+                Color bg, br;
+                if (m.isPressed()) {
+                    bg = pressBg; br = pressBorder;
+                } else if (m.isRollover()) {
+                    bg = hoverBg; br = hoverBorder;
+                } else {
+                    bg = normalBg; br = normalBorder;
+                }
+
+                // Fondo redondeado
+                g2.setColor(bg);
+                g2.fillRoundRect(0, 0, w, h, arc, arc);
+
+                // Borde redondeado
+                g2.setStroke(new BasicStroke(bordBtn));
+                g2.setColor(br);
+                double off = bordBtn / 2.0;
+                g2.drawRoundRect((int)off, (int)off, w - bordBtn, h - bordBtn, arc, arc);
+
+                g2.dispose();
+                super.paintComponent(g);
+            }
+            @Override protected void paintBorder(Graphics g) { /* nada */ }
+        };
+        btnEntrar.setOpaque(false);
+        btnEntrar.setContentAreaFilled(false);
+        btnEntrar.setFocusPainted(false);
+        btnEntrar.setBorderPainted(false);
+        btnEntrar.setRolloverEnabled(true);
+        btnEntrar.setBackground(normalBg);
+        btnEntrar.setForeground(Color.WHITE);
+        btnEntrar.setFont(new Font("Segoe UI", Font.BOLD, (int)(45 * 0.35)));
         btnEntrar.setBounds(700, 350, 400, 45);
-        btnEntrar.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        btnEntrar.setBackground(new Color(49, 109, 233));
+        add(btnEntrar);
         btnEntrar.setForeground(Color.WHITE);
         btnEntrar.setFocusPainted(false);
         add(btnEntrar);
 
-        // ---------- Texto inferior con enlace
-        JLabel linkRegistro = new JLabel("<html><u>Si quieres crear una cuenta de entrenador, pulsa aquí</u></html>");
-        linkRegistro.setForeground(new Color(49, 109, 233));
-        linkRegistro.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        linkRegistro.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        linkRegistro.setBounds(700, 410, 450, 30);
-        add(linkRegistro);
+
 
         // ---------- Acción del botón "Entrar"
         btnEntrar.addActionListener(e -> {
@@ -116,6 +262,18 @@ public class LoginVentana extends JFrame {
             String resultado = login.iniciarSesion(usuario, contrasena, this);
 
         });
+
+        // ---------- Texto inferior con enlace
+        JLabel linkRegistro = new JLabel(
+                "<html>"
+                        + "<span style='color:#999999;'>Si quieres crear una cuenta de entrenador, </span>"
+                        + "<span style='color:#318DE1; text-decoration:underline; cursor:hand;'>pulsa aquí</span>"
+                        + "</html>"
+        );
+        linkRegistro.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        linkRegistro.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        linkRegistro.setBounds(700, 400, 450, 30);
+        add(linkRegistro);
 
         // ---------- Acción del enlace
         linkRegistro.addMouseListener(new java.awt.event.MouseAdapter() {
