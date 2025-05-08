@@ -113,7 +113,7 @@ public class LoginVentana extends JFrame {
             String contrasena = new String(campoContrasena.getPassword());
 
             LoginController login = new LoginController();
-            String resultado = login.iniciarSesion(usuario, contrasena);
+            String resultado = login.iniciarSesion(usuario, contrasena, this);
 
             JOptionPane.showMessageDialog(this, resultado);
         });

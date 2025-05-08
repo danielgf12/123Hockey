@@ -3,29 +3,47 @@ package main.controller;
 import main.dao.UsuarioDAO;
 import main.model.Usuario;
 import main.util.HashUtil;
+import main.view.InicioEntrenadorVentana;
+// importar aquí InicioDelegadoVentana e InicioJugadorVentana cuando las tengas
+
+import javax.swing.*;
 
 public class LoginController {
 
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
 
-    public String iniciarSesion(String usuarioInput, String contrasenaInput) {
+    public String iniciarSesion(String usuarioInput, String contrasenaInput, JFrame loginVentana) {
 
-        // 1. Buscar el usuario por nombre de usuario
+        // 1. Buscar usuario
         Usuario usuario = usuarioDAO.buscarPorNombreUsuario(usuarioInput);
 
         if (usuario == null) {
-            return "❌ Usuario no encontrado.";
+            JOptionPane.showMessageDialog(loginVentana, "❌ Usuario no encontrado.");
+            return usuarioInput;
         }
 
-        // 2. Hashear la contraseña introducida
+        // 2. Hashear y comparar
         String hashInput = HashUtil.hashSHA256(contrasenaInput);
-
-        // 3. Comparar con la guardada
         if (!usuario.getContrasena().equals(hashInput)) {
-            return "❌ Contraseña incorrecta.";
+            JOptionPane.showMessageDialog(loginVentana, "❌ Contraseña incorrecta.");
+            return usuarioInput;
         }
 
-        // 4. Acceso correcto
-        return "✅ Bienvenido, " + usuario.getNombre() + " (" + usuario.getRol() + ")";
+        // 3. Cerrar ventana login
+        loginVentana.dispose();
+
+        // 4. Redirigir a la ventana correspondiente según el rol
+        switch (usuario.getRol()) {
+            case ENTRENADOR:
+                new InicioEntrenadorVentana(usuario);
+                break;
+            case DELEGADO:
+                // new InicioDelegadoVentana(usuario);
+                break;
+            case JUGADOR:
+                // new InicioJugadorVentana(usuario);
+                break;
+        }
+        return usuarioInput;
     }
 }

@@ -5,6 +5,7 @@ import main.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import java.util.Collections;
 import java.util.List;
 
 public class EquipoDAO {
@@ -67,4 +68,19 @@ public class EquipoDAO {
             e.printStackTrace();
         }
     }
+
+    public List<Equipo> listarPorEntrenador(int idEntrenador) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "SELECT DISTINCT e FROM Equipo e JOIN EquipoJugador ej ON e.id = ej.equipo.id WHERE ej.usuario.id = :idEntrenador",
+                    Equipo.class)
+                    .setParameter("idEntrenador", idEntrenador)
+                    .list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+
 }

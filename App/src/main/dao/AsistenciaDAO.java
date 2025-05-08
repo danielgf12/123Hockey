@@ -93,4 +93,26 @@ public class AsistenciaDAO {
             e.printStackTrace();
         }
     }
+
+    public double calcularAsistenciaMediaPorEquipo(int idEquipo) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Long total = session.createQuery(
+                    "SELECT COUNT(a) FROM Asistencia a WHERE a.entrenamiento.equipo.id = :idEquipo",
+                    Long.class)
+                    .setParameter("idEquipo", idEquipo)
+                    .uniqueResult();
+
+            Long asistieron = session.createQuery(
+                    "SELECT COUNT(a) FROM Asistencia a WHERE a.entrenamiento.equipo.id = :idEquipo AND a.asistencia = true",
+                    Long.class)
+                    .setParameter("idEquipo", idEquipo)
+                    .uniqueResult();
+
+            if (total == null || total == 0) return 0;
+            return (double) asistieron / total * 100;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package main.view;
 
 import main.controller.RegistroController;
+import main.model.Usuario;
 
 import javax.swing.*;
 import java.awt.*;
@@ -75,7 +76,7 @@ public class RegistroVentana extends JFrame {
         // ---------- Lógica del botón
         btnRegistrar.addActionListener(e -> {
             RegistroController rc = new RegistroController();
-            String resultado = rc.registrarEntrenador(
+            Usuario nuevoUsuario = rc.registrarEntrenador(
                     nombre.getText(),
                     apellido1.getText(),
                     apellido2.getText(),
@@ -84,8 +85,25 @@ public class RegistroVentana extends JFrame {
                     new String(contrasena.getPassword()),
                     new String(confirmar.getPassword())
             );
-            JOptionPane.showMessageDialog(this, resultado);
+
+            if (nuevoUsuario != null) {
+                dispose(); // Cerrar ventana de registro
+                switch (nuevoUsuario.getRol()) {
+                    case ENTRENADOR:
+                        new InicioEntrenadorVentana(nuevoUsuario);
+                        break;
+                    case DELEGADO:
+                        // new InicioDelegadoVentana(nuevoUsuario);
+                        break;
+                    case JUGADOR:
+                        // new InicioJugadorVentana(nuevoUsuario);
+                        break;
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "❌ Error en el registro. Revisa los datos.");
+            }
         });
+
 
         // ---------- Volver al login
         login.addMouseListener(new java.awt.event.MouseAdapter() {

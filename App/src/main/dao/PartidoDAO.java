@@ -79,4 +79,18 @@ public class PartidoDAO {
             e.printStackTrace();
         }
     }
+
+    public int contarPorEquipo(int idEquipo) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Long total = session.createQuery(
+                    "SELECT COUNT(p) FROM Partido p WHERE p.equipo.id = :idEquipo",
+                    Long.class)
+                    .setParameter("idEquipo", idEquipo)
+                    .uniqueResult();
+            return total != null ? total.intValue() : 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }
