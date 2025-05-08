@@ -115,7 +115,6 @@ public class LoginVentana extends JFrame {
             LoginController login = new LoginController();
             String resultado = login.iniciarSesion(usuario, contrasena, this);
 
-            JOptionPane.showMessageDialog(this, resultado);
         });
 
         // ---------- Acción del enlace

@@ -18,14 +18,14 @@ public class LoginController {
         Usuario usuario = usuarioDAO.buscarPorNombreUsuario(usuarioInput);
 
         if (usuario == null) {
-            JOptionPane.showMessageDialog(loginVentana, "❌ Usuario no encontrado.");
+            JOptionPane.showMessageDialog(loginVentana, "Usuario no encontrado.");
             return usuarioInput;
         }
 
         // 2. Hashear y comparar
         String hashInput = HashUtil.hashSHA256(contrasenaInput);
         if (!usuario.getContrasena().equals(hashInput)) {
-            JOptionPane.showMessageDialog(loginVentana, "❌ Contraseña incorrecta.");
+            JOptionPane.showMessageDialog(loginVentana, "Contraseña incorrecta.");
             return usuarioInput;
         }
 

@@ -1,13 +1,20 @@
 package main.view;
 
+import main.dao.*;
+import main.model.Entrenamiento;
+import main.model.Equipo;
+import main.model.Partido;
 import main.model.Usuario;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.net.URL;
+import java.util.List;
 
 public class InicioEntrenadorVentana extends JFrame {
 
@@ -271,10 +278,38 @@ public class InicioEntrenadorVentana extends JFrame {
         int rowsE    = 2;
         int gapE     = (availE - rowsE * iconE) / (rowsE + 1);
 
+        PartidoDAO partidoDAO = new PartidoDAO();
+        Partido proximoPartido = partidoDAO.obtenerProximoPartido(entrenador.getId()); // debes implementar este método
+        EntrenamientoDAO entDAO = new EntrenamientoDAO();
+        Entrenamiento proximoEntrenamiento = entDAO.obtenerProximoEntrenamiento(entrenador.getId()); // idem
+
+        SimpleDateFormat dfFecha = new SimpleDateFormat("dd/MM");
+        SimpleDateFormat dfHora  = new SimpleDateFormat("HH:mm");
+
+        String textoPartido;
+        if (proximoPartido != null) {
+            String dia   = dfFecha.format(proximoPartido.getFecha());
+            String rival = proximoPartido.getRival();
+            textoPartido = "Próximo partido: " + dia + " vs " + rival;
+        } else {
+            textoPartido = "Próximo partido: -";
+        }
+
+        String textoEntreno;
+        if (proximoEntrenamiento != null) {
+            String dia  = dfFecha.format(proximoEntrenamiento.getFecha());
+            String hor  = dfHora.format(proximoEntrenamiento.getFecha());
+            textoEntreno = "Próximo entrenamiento: " + dia + " " + hor;
+        } else {
+            textoEntreno = "Próximo entrenamiento: -";
+        }
+
+// ya usas estos valores en tu panel:
         String[] textosE = {
-                "Próximo partido: [Día] vs [Rival]",
-                "Próximo entrenamiento: [Día] [Hora]"
+                textoPartido,
+                textoEntreno
         };
+
         String[] iconosE = {"hockey_icon.png","board_icon.png"};
 
         for(int i=0; i<rowsE; i++){
@@ -344,11 +379,30 @@ public class InicioEntrenadorVentana extends JFrame {
         int rowsR    = 3;
         int gapR     = (availR - rowsR * iconR) / (rowsR + 1);
 
+        EquipoDAO equipoDAO = new EquipoDAO();
+        List<Equipo> equipos = equipoDAO.listarPorEntrenador(entrenador.getId());
+        int numEquipos = equipos.size();
+
+
+        JugadorInfoDAO jugadorDAO = new JugadorInfoDAO();
+        int numJugadores        = jugadorDAO.listarTodos().size();
+
+        AsistenciaDAO asisDAO   = new AsistenciaDAO();
+        double mediaAsistencia  = 0;
+        if (!equipos.isEmpty()) {
+            double suma = 0;
+            for (Equipo e : equipos) {
+                suma += asisDAO.calcularAsistenciaMediaPorEquipo(e.getId());
+            }
+            mediaAsistencia = suma / equipos.size();
+        }
+
         String[] textosR = {
-                "Equipos: [Nº equipos]",
-                "Jugadores totales: [Nº jugadores]",
-                "Media asistencia: [Media asistencia] %"
+                "Equipos: " + numEquipos,
+                "Jugadores totales: " + numJugadores,
+                String.format("Media asistencia: %.1f %%", mediaAsistencia)
         };
+
         String[] iconosR = {"team_icon.png","list_icon.png","graph_icon.png"};
 
         for(int i=0; i<rowsR; i++){

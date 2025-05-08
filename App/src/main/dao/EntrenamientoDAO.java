@@ -5,6 +5,7 @@ import main.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import java.util.Date;
 import java.util.List;
 
 public class EntrenamientoDAO {
@@ -93,4 +94,22 @@ public class EntrenamientoDAO {
             return 0;
         }
     }
-}
+        public Entrenamiento obtenerProximoEntrenamiento ( int idEquipo){
+            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+                return session.createQuery(
+                        "FROM Entrenamiento e " +
+                                " WHERE e.equipo.id = :idEquipo " +
+                                "   AND e.fecha >= :ahora " +
+                                " ORDER BY e.fecha ASC",
+                        Entrenamiento.class)
+                        .setParameter("idEquipo", idEquipo)
+                        .setParameter("ahora", new Date())
+                        .setMaxResults(1)
+                        .uniqueResult();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+    }

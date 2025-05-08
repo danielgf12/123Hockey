@@ -5,6 +5,7 @@ import main.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import java.util.Date;
 import java.util.List;
 
 public class PartidoDAO {
@@ -91,6 +92,25 @@ public class PartidoDAO {
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    public Partido obtenerProximoPartido(int idEquipo) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // asumimos que Partido tiene un campo Date fecha
+            return session.createQuery(
+                    "FROM Partido p " +
+                            " WHERE p.equipo.id = :idEquipo " +
+                            "   AND p.fecha >= :hoy " +
+                            " ORDER BY p.fecha ASC",
+                    Partido.class)
+                    .setParameter("idEquipo", idEquipo)
+                    .setParameter("hoy", new Date())
+                    .setMaxResults(1)
+                    .uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
