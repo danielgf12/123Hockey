@@ -133,6 +133,10 @@ public class InicioEntrenadorVentana extends JFrame {
         btnPlantilla.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnPlantilla.setBounds(mX, btnY + 20, btnW, btnH);
         add(btnPlantilla);
+        btnPlantilla.addActionListener(e -> {
+            // 'entrenador' es el Usuario que recibiste en el constructor de esta clase
+            new PlantillaVentana(entrenador);
+        });
 
 // Equipos
         JButton btnEquipos = new JButton("Equipos") {
@@ -176,6 +180,10 @@ public class InicioEntrenadorVentana extends JFrame {
         btnEquipos.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnEquipos.setBounds(mX + btnW + gapX, btnY + 20, btnW, btnH);
         add(btnEquipos);
+        btnEquipos.addActionListener(e -> {
+            // 'entrenador' es el Usuario que recibiste en el constructor de esta clase
+            new EquiposVentana(entrenador);
+        });
 
 // Calendario
         JButton btnCalendario = new JButton("Calendario") {
@@ -219,7 +227,10 @@ public class InicioEntrenadorVentana extends JFrame {
         btnCalendario.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnCalendario.setBounds(mX + 2*(btnW + gapX), btnY + 20, btnW, btnH);
         add(btnCalendario);
-
+        btnCalendario.addActionListener(e -> {
+            // 'entrenador' es el Usuario que recibiste en el constructor de esta clase
+            new CalendarioVentana(entrenador);
+        });
 
 
 
