@@ -68,15 +68,20 @@ public class JugadorInfoDAO {
     }
 
     // Eliminar
-    public void eliminarJugadorInfo(JugadorInfo info) {
+    // En JugadorInfoDAO.java
+    public void eliminarPorUsuarioId(int usuarioId) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.delete(info);
+            // Borra directamente por HQL usando la FK a Usuario
+            session.createQuery("delete from JugadorInfo ji where ji.usuario.id = :uid")
+                    .setParameter("uid", usuarioId)
+                    .executeUpdate();
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             e.printStackTrace();
         }
     }
+
 }

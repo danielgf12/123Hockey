@@ -6,6 +6,7 @@ import main.model.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.awt.image.BufferedImage;
@@ -129,6 +130,11 @@ public class InicioJugadorVentana extends JFrame {
         btnPlantilla.setForeground(Color.WHITE);
         btnPlantilla.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnPlantilla.setBounds(mX, btnY + 20, btnW, btnH);
+        btnPlantilla.addActionListener(e -> {
+            // 'entrenador' es el Usuario que recibiste en el constructor de esta clase
+            new PlantillaVentana(jugador);
+            dispose();
+        });
         add(btnPlantilla);
 
 // Equipos
@@ -172,6 +178,11 @@ public class InicioJugadorVentana extends JFrame {
         btnEquipos.setForeground(Color.WHITE);
         btnEquipos.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnEquipos.setBounds(mX + btnW + gapX, btnY + 20, btnW, btnH);
+        btnEquipos.addActionListener(e -> {
+            // 'entrenador' es el Usuario que recibiste en el constructor de esta clase
+            new PlantillaVentana(jugador);
+            dispose();
+        });
         add(btnEquipos);
 
 // Calendario
@@ -215,6 +226,11 @@ public class InicioJugadorVentana extends JFrame {
         btnCalendario.setForeground(Color.WHITE);
         btnCalendario.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnCalendario.setBounds(mX + 2*(btnW + gapX), btnY + 20, btnW, btnH);
+        btnCalendario.addActionListener(e -> {
+            // 'entrenador' es el Usuario que recibiste en el constructor de esta clase
+            new PlantillaVentana(jugador);
+            dispose();
+        });
         add(btnCalendario);
 
 
@@ -424,29 +440,21 @@ public class InicioJugadorVentana extends JFrame {
     }
 
     private ImageIcon cargarAvatar(Usuario u, int w, int h) {
-        byte[] foto = u.getFotoUsuario();  // o getFotoBytes()
-        BufferedImage srcImg = null;
-        try {
-            if (foto != null && foto.length > 0) {
-                srcImg = ImageIO.read(new ByteArrayInputStream(foto));
+        try{
+            byte[] f=u.getFotoUsuario();
+            if (f!=null && f.length>0){
+                BufferedImage src=ImageIO.read(new ByteArrayInputStream(f));
+                BufferedImage dst=new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2=dst.createGraphics();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setClip(new Ellipse2D.Float(0,0,w,h));
+                g2.drawImage(src,0,0,w,h,null);
+                g2.dispose();
+                return new ImageIcon(dst);
             }
-        } catch (Exception ignored) { }
-
-        if (srcImg != null) {
-            // reescalado de alta calidad
-            BufferedImage buf = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2 = buf.createGraphics();
-            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.drawImage(srcImg, 0, 0, w, h, null);
-            g2.dispose();
-            return new ImageIcon(buf);
-        }
-
-        // fallback al default usando el mismo loadIcon que empleas para los demás
-        return loadIcon("user_default.png", w, h);
+        } catch(Exception ignored){}
+        return loadIcon("user_default.png",w,h);
     }
 
 

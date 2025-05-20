@@ -9,6 +9,7 @@ import main.model.Usuario;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.awt.image.BufferedImage;
@@ -18,7 +19,7 @@ import java.util.List;
 
 public class InicioDelegadoVentana extends JFrame {
 
-    public InicioDelegadoVentana(Usuario entrenador) {
+    public InicioDelegadoVentana(Usuario delegado) {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         getContentPane().setBackground(new Color(18, 18, 18));
@@ -65,14 +66,14 @@ public class InicioDelegadoVentana extends JFrame {
         // AVATAR
         int avatarSize = headerH - 16;
         int avatarX    = W - mX - avatarSize;
-        ImageIcon avatarIcon = cargarAvatar(entrenador, avatarSize, avatarSize);
+        ImageIcon avatarIcon = cargarAvatar(delegado, avatarSize, avatarSize);
         JLabel avatar = new JLabel(avatarIcon);
         avatar.setBounds(avatarX, mX, avatarSize, avatarSize);
         add(avatar);
 
         // SALUDO (un poco más abajo y más grande)
         int greetW = avatarX - 2*mX + 30;
-        JLabel hola = new JLabel("Hola, " + entrenador.getNombre(), SwingConstants.RIGHT);
+        JLabel hola = new JLabel("Hola, " + delegado.getNombre(), SwingConstants.RIGHT);
         hola.setFont(new Font("Segoe UI", Font.BOLD, headerH/2 - 2));
         hola.setForeground(new Color(49,109,233));
         hola.setBounds(mX, mX, greetW, avatarSize);
@@ -132,6 +133,11 @@ public class InicioDelegadoVentana extends JFrame {
         btnPlantilla.setForeground(Color.WHITE);
         btnPlantilla.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnPlantilla.setBounds(mX, btnY + 20, btnW, btnH);
+        btnPlantilla.addActionListener(e -> {
+            // 'delegado' es el Usuario que recibiste en el constructor de esta clase
+            new PlantillaVentana(delegado);
+            dispose();
+        });
         add(btnPlantilla);
 
 // Equipos
@@ -175,6 +181,11 @@ public class InicioDelegadoVentana extends JFrame {
         btnEquipos.setForeground(Color.WHITE);
         btnEquipos.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnEquipos.setBounds(mX + btnW + gapX, btnY + 20, btnW, btnH);
+        btnEquipos.addActionListener(e -> {
+            // 'delegado' es el Usuario que recibiste en el constructor de esta clase
+            new PlantillaVentana(delegado);
+            dispose();
+        });
         add(btnEquipos);
 
 // Calendario
@@ -218,6 +229,11 @@ public class InicioDelegadoVentana extends JFrame {
         btnCalendario.setForeground(Color.WHITE);
         btnCalendario.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnCalendario.setBounds(mX + 2*(btnW + gapX), btnY + 20, btnW, btnH);
+        btnCalendario.addActionListener(e -> {
+            // 'delegado' es el Usuario que recibiste en el constructor de esta clase
+            new PlantillaVentana(delegado);
+            dispose();
+        });
         add(btnCalendario);
 
 
@@ -285,9 +301,9 @@ public class InicioDelegadoVentana extends JFrame {
         int gapE     = (availE - rowsE * iconE) / (rowsE + 1);
 
         PartidoDAO partidoDAO = new PartidoDAO();
-        Partido proximoPartido = partidoDAO.obtenerProximoPartido(entrenador.getId()); // debes implementar este método
+        Partido proximoPartido = partidoDAO.obtenerProximoPartido(delegado.getId()); // debes implementar este método
         EntrenamientoDAO entDAO = new EntrenamientoDAO();
-        Entrenamiento proximoEntrenamiento = entDAO.obtenerProximoEntrenamiento(entrenador.getId()); // idem
+        Entrenamiento proximoEntrenamiento = entDAO.obtenerProximoEntrenamiento(delegado.getId()); // idem
 
         SimpleDateFormat dfFecha = new SimpleDateFormat("dd/MM");
         SimpleDateFormat dfHora  = new SimpleDateFormat("HH:mm");
@@ -334,29 +350,21 @@ public class InicioDelegadoVentana extends JFrame {
     }
 
     private ImageIcon cargarAvatar(Usuario u, int w, int h) {
-        byte[] foto = u.getFotoUsuario();  // o getFotoBytes()
-        BufferedImage srcImg = null;
-        try {
-            if (foto != null && foto.length > 0) {
-                srcImg = ImageIO.read(new ByteArrayInputStream(foto));
+        try{
+            byte[] f=u.getFotoUsuario();
+            if (f!=null && f.length>0){
+                BufferedImage src=ImageIO.read(new ByteArrayInputStream(f));
+                BufferedImage dst=new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2=dst.createGraphics();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setClip(new Ellipse2D.Float(0,0,w,h));
+                g2.drawImage(src,0,0,w,h,null);
+                g2.dispose();
+                return new ImageIcon(dst);
             }
-        } catch (Exception ignored) { }
-
-        if (srcImg != null) {
-            // reescalado de alta calidad
-            BufferedImage buf = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2 = buf.createGraphics();
-            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.drawImage(srcImg, 0, 0, w, h, null);
-            g2.dispose();
-            return new ImageIcon(buf);
-        }
-
-        // fallback al default usando el mismo loadIcon que empleas para los demás
-        return loadIcon("user_default.png", w, h);
+        } catch(Exception ignored){}
+        return loadIcon("user_default.png",w,h);
     }
 
 

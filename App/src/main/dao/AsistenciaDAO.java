@@ -82,11 +82,13 @@ public class AsistenciaDAO {
     }
 
     // Eliminar asistencia
-    public void eliminarAsistencia(Asistencia asistencia) {
+    public void eliminarPorUsuario(int usuarioId) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.delete(asistencia);
+            session.createQuery("delete from Asistencia a where a.usuario.id = :uid")
+                    .setParameter("uid", usuarioId)
+                    .executeUpdate();
             tx.commit();
         } catch (Exception e) {
             if (tx != null) tx.rollback();
@@ -113,6 +115,30 @@ public class AsistenciaDAO {
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    public long contarAsistencias(int idUsuario) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "SELECT COUNT(a) FROM Asistencia a " +
+                            "WHERE a.usuario.id = :idUsuario AND a.asistencia = true",
+                    Long.class
+            )
+                    .setParameter("idUsuario", idUsuario)
+                    .uniqueResult();
+        }
+    }
+
+    public long contarPartidos(int idUsuario) {
+        try (Session s = HibernateUtil.getSessionFactory().openSession()) {
+            Long cnt = s.createQuery(
+                    "SELECT COUNT(a) FROM Asistencia a WHERE a.usuario.id = :id AND a.asistencia = true",
+                    Long.class
+            )
+                    .setParameter("id", idUsuario)
+                    .uniqueResult();
+            return cnt != null ? cnt : 0L;
         }
     }
 }
