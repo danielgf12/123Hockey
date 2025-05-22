@@ -183,7 +183,7 @@ public class InicioDelegadoVentana extends JFrame {
         btnEquipos.setBounds(mX + btnW + gapX, btnY + 20, btnW, btnH);
         btnEquipos.addActionListener(e -> {
             // 'delegado' es el Usuario que recibiste en el constructor de esta clase
-            new PlantillaVentana(delegado);
+            new EquiposVentana(delegado);
             dispose();
         });
         add(btnEquipos);
@@ -231,7 +231,7 @@ public class InicioDelegadoVentana extends JFrame {
         btnCalendario.setBounds(mX + 2*(btnW + gapX), btnY + 20, btnW, btnH);
         btnCalendario.addActionListener(e -> {
             // 'delegado' es el Usuario que recibiste en el constructor de esta clase
-            new PlantillaVentana(delegado);
+            new CalendarioVentana(delegado);
             dispose();
         });
         add(btnCalendario);

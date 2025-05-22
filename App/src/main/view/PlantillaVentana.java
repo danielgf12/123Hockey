@@ -35,7 +35,7 @@ public class PlantillaVentana extends JFrame {
     private boolean sortByCategory = false;
     private boolean sortByPosition = false;
     private JPopupMenu ordenarMenu;
-    // ————————————————————————
+    // ——————————————————————
 
     public PlantillaVentana(Usuario usuario) {
         super("123Hockey - Plantilla");
@@ -283,19 +283,19 @@ public class PlantillaVentana extends JFrame {
         btnNuevo.setRolloverEnabled(true);
         btnNuevo.setForeground(Color.WHITE);
         btnNuevo.setFont(new Font("Segoe UI", Font.BOLD, 18));
-// colócalo a la derecha de btnOrdenar (ajusta el +300 si quieres más separación)
         btnNuevo.setBounds(mX-21 + (int)(W*0.3) + 300, ctrlY, 180, ctrlH);
         btnNuevo.addActionListener(e -> {
-            // abrimos el diálogo de “Crear usuario”
             CrearUsuarioVentana dialog = new CrearUsuarioVentana(
                     PlantillaVentana.this,
                     () -> filtrar(txtBuscar.getText())
             );
             dialog.setVisible(true);
         });
-
-        add(btnNuevo);
-
+        // Solo ENTRENADOR o DELEGADO ven este botón:
+        if (usuarioLogado.getRol() == Usuario.Rol.ENTRENADOR
+                || usuarioLogado.getRol() == Usuario.Rol.DELEGADO) {
+            add(btnNuevo);
+        }
 
         // --- Datos y panel interno ---
         todos = new UsuarioDAO().listarTodos();
@@ -379,8 +379,7 @@ public class PlantillaVentana extends JFrame {
         inner.add(createSectionHeader("Jugadores"));
         List<Usuario> jugadores = todos.stream()
                 .filter(u -> u.getRol() == Usuario.Rol.JUGADOR)
-                .filter(u -> (u.getNombre() + " " + u.getApellidos())
-                        .toLowerCase().contains(t))
+                .filter(u -> (u.getNombre() + " " + u.getApellidos()).toLowerCase().contains(t))
                 .filter(u -> {
                     JugadorInfo info = new JugadorInfoDAO().buscarPorUsuarioId(u.getId());
                     String cat = (info != null && info.getCategoria() != null && !info.getCategoria().isEmpty())
@@ -411,18 +410,12 @@ public class PlantillaVentana extends JFrame {
         }
         jugadores.forEach(u -> inner.add(createRow(u)));
 
-        // Cuerpo técnico (delegados) con solo filtro de nombre
-        // Ahora incluimos también a los entrenadores:
+        // Cuerpo técnico (delegados + entrenadores)
         inner.add(createSectionHeader("Cuerpo técnico"));
         todos.stream()
-                .filter(u ->
-                        u.getRol() == Usuario.Rol.DELEGADO
-                                || u.getRol() == Usuario.Rol.ENTRENADOR
-                )
-                .filter(u -> (u.getNombre() + " " + u.getApellidos())
-                        .toLowerCase().contains(t))
+                .filter(u -> u.getRol() == Usuario.Rol.DELEGADO || u.getRol() == Usuario.Rol.ENTRENADOR)
+                .filter(u -> (u.getNombre() + " " + u.getApellidos()).toLowerCase().contains(t))
                 .forEach(u -> inner.add(createRow(u)));
-
 
         inner.revalidate();
         inner.repaint();
@@ -440,7 +433,7 @@ public class PlantillaVentana extends JFrame {
         return p;
     }
 
-    /** Fila para cada usuario (Jugador o Delegado) **/
+    /** Fila para cada usuario (Jugador o Delegado/Entrenador) **/
     private JPanel createRow(Usuario u){
         int rowH = 80;
         JPanel p = new JPanel(null);
@@ -474,7 +467,7 @@ public class PlantillaVentana extends JFrame {
         }
         p.add(lblCat);
 
-        // Posición o “Delegado”
+        // Posición o Rol (Delegado/Entrenador)
         JLabel lblTipo = new JLabel();
         lblTipo.setForeground(Color.WHITE);
         lblTipo.setFont(new Font("Segoe UI", Font.PLAIN, 18));
@@ -488,9 +481,9 @@ public class PlantillaVentana extends JFrame {
         }
         p.add(lblTipo);
 
-        // “Ver ficha...” clicable (según rol)
+        // “Ver ficha...” clicable según permisos
         boolean canView = usuarioLogado.getRol() != Usuario.Rol.JUGADOR
-                || usuarioLogado.getId()==(u.getId());
+                || usuarioLogado.getId() == u.getId();
         if (canView) {
             JLabel lblFicha = new JLabel(
                     "<html><span style='color:#318DE1; text-decoration:underline; cursor:hand;'>Ver ficha...</span></html>"
@@ -498,12 +491,9 @@ public class PlantillaVentana extends JFrame {
             lblFicha.setBounds(1100, 0, 100, rowH);
             lblFicha.addMouseListener(new MouseAdapter() {
                 @Override public void mouseClicked(MouseEvent e) {
-                    // usuarioLogado es el Usuario que inició sesión (campo de PlantillaVentana)
-                    // u es el Usuario de la fila
                     new FichaUsuarioVentana(usuarioLogado, u).setVisible(true);
                 }
             });
-
             p.add(lblFicha);
         }
 
@@ -512,12 +502,12 @@ public class PlantillaVentana extends JFrame {
 
     /** Carga avatar desde BBDD o recurso por defecto **/
     private ImageIcon cargarAvatar(Usuario u, int w, int h) {
-        try{
-            byte[] f=u.getFotoUsuario();
-            if (f!=null && f.length>0){
-                BufferedImage src=ImageIO.read(new ByteArrayInputStream(f));
-                BufferedImage dst=new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
-                Graphics2D g2=dst.createGraphics();
+        try {
+            byte[] f = u.getFotoUsuario();
+            if (f != null && f.length > 0) {
+                BufferedImage src = ImageIO.read(new ByteArrayInputStream(f));
+                BufferedImage dst = new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2 = dst.createGraphics();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setClip(new Ellipse2D.Float(0,0,w,h));
@@ -530,11 +520,11 @@ public class PlantillaVentana extends JFrame {
     }
 
     /** Carga iconos desde /assets **/
-    private ImageIcon loadIcon(String name, int w, int h){
-        URL u = getClass().getClassLoader().getResource("assets/" + name);
-        Image img = (u != null)
+    private ImageIcon loadIcon(String name,int w,int h){
+        URL u = getClass().getClassLoader().getResource("assets/"+name);
+        Image img = (u!=null)
                 ? new ImageIcon(u).getImage()
                 : new ImageIcon("src/assets/" + name).getImage();
-        return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH));
+        return new ImageIcon(img.getScaledInstance(w,h,Image.SCALE_SMOOTH));
     }
 }

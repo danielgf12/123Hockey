@@ -180,7 +180,7 @@ public class InicioJugadorVentana extends JFrame {
         btnEquipos.setBounds(mX + btnW + gapX, btnY + 20, btnW, btnH);
         btnEquipos.addActionListener(e -> {
             // 'entrenador' es el Usuario que recibiste en el constructor de esta clase
-            new PlantillaVentana(jugador);
+            new EquiposVentana(jugador);
             dispose();
         });
         add(btnEquipos);
@@ -228,7 +228,7 @@ public class InicioJugadorVentana extends JFrame {
         btnCalendario.setBounds(mX + 2*(btnW + gapX), btnY + 20, btnW, btnH);
         btnCalendario.addActionListener(e -> {
             // 'entrenador' es el Usuario que recibiste en el constructor de esta clase
-            new PlantillaVentana(jugador);
+            new CalendarioVentana(jugador);
             dispose();
         });
         add(btnCalendario);

@@ -395,7 +395,7 @@ public class InicioEntrenadorVentana extends JFrame {
         int gapR     = (availR - rowsR * iconR) / (rowsR + 1);
 
         EquipoDAO equipoDAO = new EquipoDAO();
-        List<Equipo> equipos = equipoDAO.listarPorEntrenador(entrenador.getId());
+        List<Equipo> equipos = equipoDAO.listarTodos();
         int numEquipos = equipos.size();
 
 
