@@ -1,7 +1,9 @@
 package main.model;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "entrenamiento")
@@ -12,7 +14,7 @@ public class Entrenamiento {
     private int id;
 
     @ManyToOne
-    @JoinColumn(name = "id_equipo")
+    @JoinColumn(name = "id_equipo", nullable = false)
     private Equipo equipo;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -28,6 +30,17 @@ public class Entrenamiento {
     private TipoEntrenamiento tipoEntrenamiento;
 
     private String observaciones;
+
+    /**
+     * Nuevo mapeo para que al eliminar un entrenamiento
+     * Hibernate borre también todas sus asistencias hijas.
+     */
+    @OneToMany(
+            mappedBy = "entrenamiento",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Asistencia> asistencias = new ArrayList<>();
 
     // Enum para "repetir"
     public enum Repetir {
@@ -75,4 +88,7 @@ public class Entrenamiento {
 
     public String getObservaciones() { return observaciones; }
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
+
+    public List<Asistencia> getAsistencias() { return asistencias; }
+    public void setAsistencias(List<Asistencia> asistencias) { this.asistencias = asistencias; }
 }

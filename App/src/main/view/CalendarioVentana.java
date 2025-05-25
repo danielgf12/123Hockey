@@ -48,6 +48,7 @@ public class CalendarioVentana extends JFrame {
     }
 
     private void initUI() {
+
         // — Calcula tamaños basados en pantalla —
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         W       = screen.width;
@@ -293,6 +294,9 @@ public class CalendarioVentana extends JFrame {
         EntrenamientoDAO entDao = new EntrenamientoDAO();
         PartidoDAO parDao = new PartidoDAO();
         EquipoJugadorDAO ejDao = new EquipoJugadorDAO();
+        entDao.generarRepeticionesPendientes();
+
+
 
         switch(usuarioLogado.getRol()){
             case ENTRENADOR:

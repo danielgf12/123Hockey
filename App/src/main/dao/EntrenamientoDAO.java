@@ -5,6 +5,7 @@ import main.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -154,8 +155,62 @@ public class EntrenamientoDAO {
             e.printStackTrace();
             return null;
         }
-    }
 
+
+    }
+    public void generarRepeticionesPendientes() {
+        Date ahora = new Date();
+        Transaction tx = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // 1. Buscar los entrenamientos pasados que repiten
+            List<Entrenamiento> list = session.createQuery(
+                    "FROM Entrenamiento e " +
+                            " WHERE e.fecha < :ahora " +
+                            "   AND e.repetir  != :ninguno",
+                    Entrenamiento.class)
+                    .setParameter("ahora",    ahora)
+                    .setParameter("ninguno",  Entrenamiento.Repetir.NINGUNO)
+                    .list();
+
+            if (list.isEmpty()) return;
+
+            tx = session.beginTransaction();
+
+            for (Entrenamiento e : list) {
+                // 2. Calcular la fecha de la próxima sesión
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(e.getFecha());
+                if (e.getRepetir() == Entrenamiento.Repetir.SEMANAL) {
+                    cal.add(Calendar.WEEK_OF_YEAR, 1);
+                } else if (e.getRepetir() == Entrenamiento.Repetir.QUINCENAL) {
+                    cal.add(Calendar.WEEK_OF_YEAR, 2);
+                } else {
+                    continue;
+                }
+                Date proximaFecha = cal.getTime();
+
+                // 3. Crear y guardar el nuevo entrenamiento
+                Entrenamiento nuevo = new Entrenamiento(
+                        e.getEquipo(),
+                        proximaFecha,
+                        e.getUbicacion(),
+                        e.getRepetir(),
+                        e.getTipoEntrenamiento(),
+                        e.getObservaciones()
+                );
+                session.save(nuevo);
+
+                // 4. (Opcional) Desactivar la repetición en el original
+                e.setRepetir(Entrenamiento.Repetir.NINGUNO);
+                session.update(e);
+            }
+
+            tx.commit();
+        } catch (Exception ex) {
+            if (tx != null) tx.rollback();
+            ex.printStackTrace();
+        }
+    }
 
     /**
      * Sobrecarga de compatibilidad para un solo equipo
