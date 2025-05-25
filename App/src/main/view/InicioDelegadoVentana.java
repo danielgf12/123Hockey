@@ -300,51 +300,50 @@ public class InicioDelegadoVentana extends JFrame {
         int rowsE    = 2;
         int gapE     = (availE - rowsE * iconE) / (rowsE + 1);
 
-        PartidoDAO partidoDAO = new PartidoDAO();
-        Partido proximoPartido = partidoDAO.obtenerProximoPartido(delegado.getId()); // debes implementar este método
-        EntrenamientoDAO entDAO = new EntrenamientoDAO();
-        Entrenamiento proximoEntrenamiento = entDAO.obtenerProximoEntrenamiento(delegado.getId()); // idem
+        // DAOs
+        PartidoDAO        partidoDAO       = new PartidoDAO();
+        EntrenamientoDAO  entDAO           = new EntrenamientoDAO();
 
-        SimpleDateFormat dfFecha = new SimpleDateFormat("dd/MM");
-        SimpleDateFormat dfHora  = new SimpleDateFormat("HH:mm");
+// Próximos eventos globales
+        Partido           proximoPartido           = partidoDAO.obtenerProximoPartidoGlobal();
+        Entrenamiento     proximoEntrenamiento     = entDAO.obtenerProximoEntrenamientoGlobal();
 
-        String textoPartido;
-        if (proximoPartido != null) {
-            String dia   = dfFecha.format(proximoPartido.getFecha());
-            String rival = proximoPartido.getRival();
-            textoPartido = "Próximo partido: " + dia + " vs " + rival;
-        } else {
-            textoPartido = "Próximo partido: -";
-        }
+// Formateadores
+        SimpleDateFormat  dfFecha = new SimpleDateFormat("dd/MM");
+        SimpleDateFormat  dfHora  = new SimpleDateFormat("HH:mm");
 
-        String textoEntreno;
-        if (proximoEntrenamiento != null) {
-            String dia  = dfFecha.format(proximoEntrenamiento.getFecha());
-            String hor  = dfHora.format(proximoEntrenamiento.getFecha());
-            textoEntreno = "Próximo entrenamiento: " + dia + " " + hor;
-        } else {
-            textoEntreno = "Próximo entrenamiento: -";
-        }
+// Texto partido
+        String textoPartido = (proximoPartido != null)
+                ? String.format("Próximo partido: %s vs %s",
+                dfFecha.format(proximoPartido.getFecha()),
+                proximoPartido.getRival())
+                : "Próximo partido: -";
 
-// ya usas estos valores en tu panel:
-        String[] textosE = {
-                textoPartido,
-                textoEntreno
-        };
+// Texto entrenamiento
+        String textoEntreno = (proximoEntrenamiento != null)
+                ? String.format("Próximo entrenamiento: %s %s",
+                dfFecha.format(proximoEntrenamiento.getFecha()),
+                dfHora .format(proximoEntrenamiento.getFecha()))
+                : "Próximo entrenamiento: -";
 
-        String[] iconosE = {"hockey_icon.png","board_icon.png"};
+// Arrays para pintar
+        String[] textosE = { textoPartido, textoEntreno };
+        String[] iconosE = { "hockey_icon.png", "board_icon.png" };
 
-        for(int i=0; i<rowsE; i++){
-            int y = titleBot + gapE*(i+1) + iconE*i;
+        for (int i = 0; i < textosE.length; i++) {
+            int y = titleBot + gapE * (i + 1) + iconE * i;
             addIconAndText(
                     pE,
                     iconosE[i],
                     textosE[i],
-                    innerMX, y, iconE,
-                    panelW - innerMX - iconE - innerMX,
-                    panelH+100
+                    innerMX(pE),
+                    y,
+                    iconE,
+                    panelW - 2 * innerMX(pE) - iconE,
+                    panelH + 100
             );
         }
+
 
         setVisible(true);
     }

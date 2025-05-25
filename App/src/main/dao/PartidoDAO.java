@@ -1,10 +1,12 @@
 package main.dao;
 
+import main.model.Alineacion;
 import main.model.Partido;
 import main.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -94,17 +96,40 @@ public class PartidoDAO {
             return 0;
         }
     }
-
-    public Partido obtenerProximoPartido(int idEquipo) {
+    public Partido obtenerProximoPartidoPorEquipos(List<Integer> idsEquipos, Date desde) {
+        if (idsEquipos == null || idsEquipos.isEmpty()) return null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            // asumimos que Partido tiene un campo Date fecha
             return session.createQuery(
                     "FROM Partido p " +
-                            " WHERE p.equipo.id = :idEquipo " +
-                            "   AND p.fecha >= :hoy " +
+                            " WHERE p.equipo.id IN :ids " +
+                            "   AND p.fecha >= :desde " +
                             " ORDER BY p.fecha ASC",
                     Partido.class)
-                    .setParameter("idEquipo", idEquipo)
+                    .setParameter("ids",   idsEquipos)
+                    .setParameter("desde", desde)
+                    .setMaxResults(1)
+                    .uniqueResult();
+        }
+    }
+
+    public Partido obtenerProximoPartido(int idEquipo) {
+        return obtenerProximoPartidoPorEquipos(
+                Collections.singletonList(idEquipo),
+                new Date()
+        );
+    }
+    // --- En PartidoDAO.java ---
+
+    /**
+     * Devuelve el siguiente partido de todos los guardados, ordenado por fecha ascendente.
+     */
+    public Partido obtenerProximoPartidoGlobal() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "FROM Partido p " +
+                            " WHERE p.fecha >= :hoy " +
+                            " ORDER BY p.fecha ASC",
+                    Partido.class)
                     .setParameter("hoy", new Date())
                     .setMaxResults(1)
                     .uniqueResult();
@@ -113,6 +138,38 @@ public class PartidoDAO {
             return null;
         }
     }
+
+    // --- En PartidoDAO.java ---
+
+    /**
+     * Devuelve el siguiente partido al que el jugador está alineado.
+     */
+// PartidoDAO.java
+
+    /**
+     * Devuelve el siguiente partido al que el jugador está alineado.
+     */
+    public Partido obtenerProximoPartidoPorJugador(int idUsuario) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "SELECT p FROM Partido p " +
+                            " WHERE p.fecha >= :hoy " +
+                            "   AND p.equipo.id IN (" +
+                            "       SELECT ej.equipo.id FROM EquipoJugador ej WHERE ej.usuario.id = :uid" +
+                            "   ) " +
+                            " ORDER BY p.fecha ASC",
+                    Partido.class
+            )
+                    .setParameter("hoy", new Date())
+                    .setParameter("uid", idUsuario)
+                    .setMaxResults(1)
+                    .uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     // import main.model.Alineacion;  // la entidad que mapea la tabla Alineacion
     public int contarPorJugador(int idJugador) {

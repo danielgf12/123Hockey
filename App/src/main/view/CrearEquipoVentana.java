@@ -21,6 +21,8 @@ public class CrearEquipoVentana extends JDialog {
     private static final Color BG     = new Color(18,18,18);
     private static final Color FG     = Color.WHITE;
     private static final Color ACCENT = new Color(49,141,225);
+    private static final int   MAX_PHOTO_BYTES = 1 * 1024 * 1024; // 1 MB
+
 
     private final Runnable onSuccess;
     private final Equipo newEquipo = new Equipo();
@@ -54,13 +56,22 @@ public class CrearEquipoVentana extends JDialog {
                     try {
                         File f = chooser.getSelectedFile();
                         byte[] img = Files.readAllBytes(f.toPath());
+                        if (img.length > MAX_PHOTO_BYTES) {
+                            JOptionPane.showMessageDialog(
+                                    CrearEquipoVentana.this,
+                                    "La imagen es demasiado grande (" + (img.length/1024) + " KB).\n" +
+                                            "Tamaño máximo permitido: 1 MB.",
+                                    "Error al cargar imagen", JOptionPane.ERROR_MESSAGE
+                            );
+                            return;
+                        }
                         newEquipo.setFotoEquipo(img);
-                        lblFoto.setIcon(cargarAvatarCircular(newEquipo, 100, 100));
+                        lblFoto.setIcon(cargarAvatarCircular(newEquipo, 80, 80));
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(
                                 CrearEquipoVentana.this,
-                                "Error al cargar imagen:\n" + ex.getMessage(),
-                                "Error", JOptionPane.ERROR_MESSAGE
+                                "No se pudo cargar la imagen:\n" + ex.getMessage(),
+                                "Error al cargar imagen", JOptionPane.ERROR_MESSAGE
                         );
                     }
                 }

@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InicioJugadorVentana extends JFrame {
 
@@ -291,51 +292,45 @@ public class InicioJugadorVentana extends JFrame {
         int rowsE    = 2;
         int gapE     = (availE - rowsE * iconE) / (rowsE + 1);
 
-        PartidoDAO partidoDAO = new PartidoDAO();
-        Partido proximoPartido = partidoDAO.obtenerProximoPartido(jugador.getId()); // debes implementar este método
-        EntrenamientoDAO entDAO = new EntrenamientoDAO();
-        Entrenamiento proximoEntrenamiento = entDAO.obtenerProximoEntrenamiento(jugador.getId()); // idem
+        PartidoDAO        partidoDAO       = new PartidoDAO();
+        EntrenamientoDAO  entDAO           = new EntrenamientoDAO();
 
-        SimpleDateFormat dfFecha = new SimpleDateFormat("dd/MM");
-        SimpleDateFormat dfHora  = new SimpleDateFormat("HH:mm");
+// Sólo los próximos del jugador
+        Partido           proximoPartido       = partidoDAO.obtenerProximoPartidoPorJugador(jugador.getId());
+        Entrenamiento     proximoEntrenamiento = entDAO.obtenerProximoEntrenamientoPorJugador(jugador.getId());
 
-        String textoPartido;
-        if (proximoPartido != null) {
-            String dia   = dfFecha.format(proximoPartido.getFecha());
-            String rival = proximoPartido.getRival();
-            textoPartido = "Próximo partido: " + dia + " vs " + rival;
-        } else {
-            textoPartido = "Próximo partido: -";
-        }
+        SimpleDateFormat  dfFecha = new SimpleDateFormat("dd/MM");
+        SimpleDateFormat  dfHora  = new SimpleDateFormat("HH:mm");
 
-        String textoEntreno;
-        if (proximoEntrenamiento != null) {
-            String dia  = dfFecha.format(proximoEntrenamiento.getFecha());
-            String hor  = dfHora.format(proximoEntrenamiento.getFecha());
-            textoEntreno = "Próximo entrenamiento: " + dia + " " + hor;
-        } else {
-            textoEntreno = "Próximo entrenamiento: -";
-        }
+        String textoPartido = (proximoPartido != null)
+                ? String.format("Próximo partido: %s vs %s",
+                dfFecha.format(proximoPartido.getFecha()),
+                proximoPartido.getRival())
+                : "Próximo partido: -";
 
-// ya usas estos valores en tu panel:
-        String[] textosE = {
-                textoPartido,
-                textoEntreno
-        };
+        String textoEntreno = (proximoEntrenamiento != null)
+                ? String.format("Próximo entrenamiento: %s %s",
+                dfFecha.format(proximoEntrenamiento.getFecha()),
+                dfHora .format(proximoEntrenamiento.getFecha()))
+                : "Próximo entrenamiento: -";
 
-        String[] iconosE = {"hockey_icon.png","board_icon.png"};
+        String[] textosE = { textoPartido, textoEntreno };
+        String[] iconosE = { "hockey_icon.png", "board_icon.png" };
 
-        for(int i=0; i<rowsE; i++){
-            int y = titleBot + gapE*(i+1) + iconE*i;
+        for (int i = 0; i < textosE.length; i++) {
+            int y = titleBot + gapE * (i + 1) + iconE * i;
             addIconAndText(
                     pE,
                     iconosE[i],
                     textosE[i],
-                    innerMX, y, iconE,
-                    panelW - innerMX - iconE - innerMX,
-                    panelH+100
+                    innerMX(pE),
+                    y,
+                    iconE,
+                    panelW - 2 * innerMX(pE) - iconE,
+                    panelH + 100
             );
         }
+
 
         // PANEL “RESUMEN GENERAL”
         JPanel pR = new JPanel(null) {
@@ -397,9 +392,12 @@ public class InicioJugadorVentana extends JFrame {
         int idJugador = jugador.getId();  // o como tengas el ID
 
 // 1) Total de partidos jugados por este jugador
-        PartidoDAO partidoDAO2 = new PartidoDAO();
-// Necesitas implementar en PartidoDAO un método contarPorJugador(int idJugador)
-        int totalPartidos = partidoDAO.contarPorJugador(idJugador);
+        JugadorInfoDAO jugadorInfoDAO = new JugadorInfoDAO();
+        jugadorInfoDAO.actualizarPartidosJugados(jugador.getId());
+
+        // Ahora recuperamos JugadorInfo para mostrar sus datos:
+        JugadorInfo ji = jugadorInfoDAO.buscarPorUsuario(jugador.getId());
+        int totalPartidos = ji != null ? ji.getPartidosJugados() : 0;
 
 // 2) Total de entrenamientos a los que se le invitó (o existen en su equipo)
         AsistenciaDAO asisDAO = new AsistenciaDAO();
@@ -407,12 +405,44 @@ public class InicioJugadorVentana extends JFrame {
         int totalEntrenamientos = asistencias.size();
 
 // 3) % de asistencia real del jugador
-        long asistidos = asistencias.stream()
-                .filter(a -> a.isAsistencia())  // o a.getAsistencia()==true
+        // 1) Recupera los IDs de los equipos a los que pertenece el jugador
+        EquipoJugadorDAO ejDao = new EquipoJugadorDAO();
+        List<EquipoJugador> listaEqJug = ejDao.listarPorJugador(idJugador);
+        List<Integer> equiposIds = listaEqJug.stream()
+                .map(ej -> ej.getEquipo().getId())
+                .collect(Collectors.toList());
+
+// 2) Trae todos los entrenamientos de esos equipos y filtra sólo los que ya pasaron
+        EntrenamientoDAO entDao = new EntrenamientoDAO();
+        Date ahora = new Date();
+        List<Entrenamiento> entrenosPasados = equiposIds.stream()
+                .flatMap(eqId -> entDao.listarPorEquipo(eqId).stream())
+                .filter(e -> e.getFecha().before(ahora))
+                .distinct() // por si un jugador está en varios equipos y se repite el mismo entreno
+                .collect(Collectors.toList());
+
+// 3) Cuenta el total de entrenamientos pasados (ese será el 100%)
+        int totalPasados = entrenosPasados.size();
+
+// 4) Cuenta cuántos de esos tiene registro de asistencia=true
+        AsistenciaDAO asisDao = new AsistenciaDAO();
+        long asistidos = entrenosPasados.stream()
+                .filter(e -> {
+                    Asistencia a = asisDao.buscarPorEntrenamientoYJugador(e.getId(), idJugador);
+                    return a != null && a.isAsistencia();
+                })
                 .count();
-        double mediaAsistencia = totalEntrenamientos > 0
-                ? (double) asistidos / totalEntrenamientos * 100
+
+// 5) Calcula el porcentaje
+        double mediaAsistencia = totalPasados > 0
+                ? (double)asistidos / totalPasados * 100
                 : 0;
+
+// Ahora puedes mostrar:
+// "Total entrenamientos pasados: " + totalPasados
+// "Entrenamientos asistidos: "      + asistidos
+// "Media asistencia: " + String.format("%.1f %%", mediaAsistencia)
+
 
 // 4) Array de textos ya dinámico
         String[] textosR = {
