@@ -47,14 +47,18 @@ public class AsistenciaDAO {
     // Listar asistencias por entrenamiento
     public List<Asistencia> listarPorEntrenamiento(int idEntrenamiento) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Asistencia WHERE entrenamiento.id = :id", Asistencia.class)
-                    .setParameter("id", idEntrenamiento)
+            return session.createQuery(
+                    "FROM Asistencia a " +
+                            " WHERE a.entrenamiento.id = :idEntrenamiento",
+                    Asistencia.class)
+                    .setParameter("idEntrenamiento", idEntrenamiento)
                     .list();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
+
 
     // Listar asistencias por jugador
     public List<Asistencia> listarPorJugador(int idUsuario) {
@@ -118,6 +122,30 @@ public class AsistenciaDAO {
         }
     }
 
+    /**
+     * Busca la asistencia de un jugador a un entrenamiento concreto.
+     * @param idEntrenamiento id del entrenamiento
+     * @param idUsuario       id del usuario (jugador)
+     * @return la Asistencia si existe, o null si no hay registro
+     */
+    public Asistencia buscarPorEntrenamientoYJugador(int idEntrenamiento, int idUsuario) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "FROM Asistencia a " +
+                            " WHERE a.entrenamiento.id = :entId " +
+                            "   AND a.usuario.id       = :usrId",
+                    Asistencia.class
+            )
+                    .setParameter("entId", idEntrenamiento)
+                    .setParameter("usrId", idUsuario)
+                    .uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     public long contarAsistencias(int idUsuario) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
@@ -127,18 +155,6 @@ public class AsistenciaDAO {
             )
                     .setParameter("idUsuario", idUsuario)
                     .uniqueResult();
-        }
-    }
-
-    public long contarPartidos(int idUsuario) {
-        try (Session s = HibernateUtil.getSessionFactory().openSession()) {
-            Long cnt = s.createQuery(
-                    "SELECT COUNT(a) FROM Asistencia a WHERE a.usuario.id = :id AND a.asistencia = true",
-                    Long.class
-            )
-                    .setParameter("id", idUsuario)
-                    .uniqueResult();
-            return cnt != null ? cnt : 0L;
         }
     }
 }

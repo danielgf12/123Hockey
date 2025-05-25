@@ -28,12 +28,12 @@ public class CrearUsuarioVentana extends JDialog {
     private static final Color BG     = new Color(18,18,18);
     private static final Color FG     = Color.WHITE;
     private static final Color ACCENT = new Color(49,141,225);
+    private static final int   MAX_PHOTO_BYTES = 1 * 1024 * 1024; // 1 MB
 
     private final Runnable onSuccess;
     private final Usuario newUser = new Usuario();
     private final JugadorInfo newInfo = new JugadorInfo();
 
-    // UI components
     private JLabel lblFoto;
     private JTextField txtNombre, txtApellidos, txtEmail;
     private JComboBox<String> cbCategoria;
@@ -47,14 +47,13 @@ public class CrearUsuarioVentana extends JDialog {
     public CrearUsuarioVentana(Frame parent, Runnable onSuccess) {
         super(parent, "Crear nuevo usuario", true);
         this.onSuccess = onSuccess;
-
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(600, 650);
         setLocationRelativeTo(parent);
         getContentPane().setBackground(BG);
         getContentPane().setLayout(new BorderLayout());
 
-        // --- Header: avatar + title ---
+        // Header with avatar
         lblFoto = new JLabel(cargarAvatarCircular(null, 80, 80));
         lblFoto.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblFoto.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -68,19 +67,27 @@ public class CrearUsuarioVentana extends JDialog {
                     try {
                         File f = chooser.getSelectedFile();
                         byte[] img = Files.readAllBytes(f.toPath());
+                        if (img.length > MAX_PHOTO_BYTES) {
+                            JOptionPane.showMessageDialog(
+                                    CrearUsuarioVentana.this,
+                                    "La imagen es demasiado grande (" + (img.length/1024) + " KB).\n" +
+                                            "Tamaño máximo permitido: 1 MB.",
+                                    "Error al cargar imagen", JOptionPane.ERROR_MESSAGE
+                            );
+                            return;
+                        }
                         newUser.setFotoUsuario(img);
-                        lblFoto.setIcon(cargarAvatarCircular(newUser, 120, 120));
+                        lblFoto.setIcon(cargarAvatarCircular(newUser, 80, 80));
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(
                                 CrearUsuarioVentana.this,
-                                "Error al cargar imagen:\n" + ex.getMessage(),
-                                "Error", JOptionPane.ERROR_MESSAGE
+                                "No se pudo cargar la imagen:\n" + ex.getMessage(),
+                                "Error al cargar imagen", JOptionPane.ERROR_MESSAGE
                         );
                     }
                 }
             }
         });
-
         JPanel header = new JPanel();
         header.setBackground(BG);
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
@@ -92,10 +99,9 @@ public class CrearUsuarioVentana extends JDialog {
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
         header.add(lblTitle);
-
         getContentPane().add(header, BorderLayout.NORTH);
 
-        // --- Form body ---
+        // Form body
         JPanel content = new JPanel(new GridBagLayout());
         content.setBackground(BG);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -103,33 +109,24 @@ public class CrearUsuarioVentana extends JDialog {
         gbc.anchor  = GridBagConstraints.WEST;
         gbc.fill    = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-
         int row = 0;
 
         // Nombre / Apellidos
         gbc.gridy = row; gbc.gridx = 0;
         content.add(createLabel("Nombre:"), gbc);
-        txtNombre = createField("");
-        gbc.gridx = 1; content.add(txtNombre, gbc);
-
+        txtNombre = createField(""); gbc.gridx = 1; content.add(txtNombre, gbc);
         gbc.gridx = 2; content.add(createLabel("Apellidos:"), gbc);
-        txtApellidos = createField("");
-        gbc.gridx = 3; content.add(txtApellidos, gbc);
+        txtApellidos = createField(""); gbc.gridx = 3; content.add(txtApellidos, gbc);
 
         // Email / Rol
-        row++;
-        gbc.gridy = row; gbc.gridx = 0;
+        row++; gbc.gridy = row; gbc.gridx = 0;
         content.add(createLabel("Email:"), gbc);
-        txtEmail = createField("");
-        gbc.gridx = 1; content.add(txtEmail, gbc);
-
+        txtEmail = createField(""); gbc.gridx = 1; content.add(txtEmail, gbc);
         gbc.gridx = 2; content.add(createLabel("Rol:"), gbc);
-        cbRol = new JComboBox<>(Usuario.Rol.values());
-        gbc.gridx = 3; content.add(cbRol, gbc);
+        cbRol = new JComboBox<>(Usuario.Rol.values()); gbc.gridx = 3; content.add(cbRol, gbc);
 
         // Datos básicos panel
-        row++;
-        gbc.gridy = row; gbc.gridx = 0; gbc.gridwidth = 4;
+        row++; gbc.gridy = row; gbc.gridx = 0; gbc.gridwidth = 4;
         JPanel datosPanel = new JPanel(new GridBagLayout());
         datosPanel.setBackground(BG);
         datosPanel.setBorder(BorderFactory.createTitledBorder(
@@ -142,7 +139,6 @@ public class CrearUsuarioVentana extends JDialog {
         dgbc.anchor  = GridBagConstraints.WEST;
         dgbc.fill    = GridBagConstraints.HORIZONTAL;
         dgbc.weightx = 1.0;
-
         int dr = 0;
         // Categoría / Posición
         dgbc.gridy = dr; dgbc.gridx = 0;
@@ -152,41 +148,26 @@ public class CrearUsuarioVentana extends JDialog {
                 "Infantil","Juvenil","Junior","Senior"
         });
         dgbc.gridx = 1; datosPanel.add(cbCategoria, dgbc);
-
-        dgbc.gridx = 2;
-        datosPanel.add(createLabel("Posición:"), dgbc);
+        dgbc.gridx = 2; datosPanel.add(createLabel("Posición:"), dgbc);
         cbPosicion = new JComboBox<>(JugadorInfo.Posicion.values());
         dgbc.gridx = 3; datosPanel.add(cbPosicion, dgbc);
 
-        // Nacimiento / Teléfono
-        dr++;
-        dgbc.gridy = dr; dgbc.gridx = 0;
+        // Nacimiento / Teléfono / Padre
+        dr++; dgbc.gridy = dr; dgbc.gridx = 0;
         datosPanel.add(createLabel("Nacimiento (d/M/yyyy):"), dgbc);
-        txtNacimiento = createField("");
-        dgbc.gridx = 1; datosPanel.add(txtNacimiento, dgbc);
-
-        dgbc.gridx = 2;
-        datosPanel.add(createLabel("Teléfono:"), dgbc);
-        txtTelefono = createField("");
-        dgbc.gridx = 3; datosPanel.add(txtTelefono, dgbc);
-
-        // Teléfono padres
-        dr++;
-        dgbc.gridy = dr; dgbc.gridx = 0;
+        txtNacimiento = createField(""); dgbc.gridx = 1; datosPanel.add(txtNacimiento, dgbc);
+        dgbc.gridx = 2; datosPanel.add(createLabel("Teléfono:"), dgbc);
+        txtTelefono = createField(""); dgbc.gridx = 3; datosPanel.add(txtTelefono, dgbc);
+        dr++; dgbc.gridy = dr; dgbc.gridx = 0;
         datosPanel.add(createLabel("Teléfono padres:"), dgbc);
-        txtTelefonoPadre = createField("");
-        dgbc.gridx = 1; datosPanel.add(txtTelefonoPadre, dgbc);
+        txtTelefonoPadre = createField(""); dgbc.gridx = 1; datosPanel.add(txtTelefonoPadre, dgbc);
 
-        gbc.gridwidth = 4;
         content.add(datosPanel, gbc);
 
         // Descripción
-        row++;
-        gbc.gridy = row; gbc.gridwidth = 4;
+        row++; gbc.gridy = row; gbc.gridwidth = 4;
         content.add(createLabel("Descripción / notas:"), gbc);
-
-        row++;
-        gbc.gridy = row; gbc.weighty = 0.2; gbc.fill = GridBagConstraints.BOTH;
+        row++; gbc.gridy = row; gbc.weighty = 0.2; gbc.fill = GridBagConstraints.BOTH;
         txtDescripcion = new JTextArea();
         txtDescripcion.setLineWrap(true);
         txtDescripcion.setWrapStyleWord(true);
@@ -194,62 +175,48 @@ public class CrearUsuarioVentana extends JDialog {
         txtDescripcion.setForeground(FG);
         txtDescripcion.setBorder(new EmptyBorder(5,5,5,5));
         content.add(new JScrollPane(txtDescripcion), gbc);
-
         gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weighty = 0; gbc.gridwidth = 1;
 
         // Credenciales
-        row++;
-        gbc.gridy = row; gbc.gridx = 0;
+        row++; gbc.gridy = row; gbc.gridx = 0;
         content.add(createLabel("Usuario:"), gbc);
-        txtUsername = createField("");
-        gbc.gridx = 1; content.add(txtUsername, gbc);
-
+        txtUsername = createField(""); gbc.gridx = 1; content.add(txtUsername, gbc);
         gbc.gridx = 2; content.add(createLabel("Contraseña:"), gbc);
-        pwdPass = new JPasswordField();
-        styleField(pwdPass);
+        pwdPass = new JPasswordField(); styleField(pwdPass);
         gbc.gridx = 3; content.add(pwdPass, gbc);
-
-        row++;
-        gbc.gridy = row; gbc.gridx = 2;
+        row++; gbc.gridy = row; gbc.gridx = 2;
         content.add(createLabel("Confirmar pwd:"), gbc);
-        pwdConfirm = new JPasswordField();
-        styleField(pwdConfirm);
+        pwdConfirm = new JPasswordField(); styleField(pwdConfirm);
         gbc.gridx = 3; content.add(pwdConfirm, gbc);
 
         getContentPane().add(new JScrollPane(content), BorderLayout.CENTER);
 
-        // Footer buttons
+        // Footer
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT,12,12));
         footer.setBackground(BG);
         JButton btnCancelar = new JButton("Cancelar");
         btnCancelar.addActionListener(e -> dispose());
         footer.add(btnCancelar);
-
         JButton btnCrear = new JButton("Crear usuario");
         btnCrear.addActionListener(e -> crearUsuario());
         footer.add(btnCrear);
-
         getContentPane().add(footer, BorderLayout.SOUTH);
-
-        // NO setVisible(true) aquí, lo hacemos desde quien lo invoque
     }
 
     private void crearUsuario() {
-        // 1) Validación de campos obligatorios
+        // 1) Validación obligatorios
         if (txtNombre.getText().trim().isEmpty()
                 || txtApellidos.getText().trim().isEmpty()
                 || txtEmail.getText().trim().isEmpty()
                 || txtUsername.getText().trim().isEmpty()
-                || pwdPass.getPassword().length == 0
-        ) {
+                || pwdPass.getPassword().length == 0) {
             JOptionPane.showMessageDialog(this,
-                    "Por favor, rellena todos los campos obligatorios:\n" +
+                    "Rellena todos los campos obligatorios:\n" +
                             "Nombre, apellidos, email, usuario y contraseña.",
                     "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        // 2) Validación de contraseña
+        // 2) Contraseñas
         String p1 = new String(pwdPass.getPassword()),
                 p2 = new String(pwdConfirm.getPassword());
         if (!p1.equals(p2)) {
@@ -258,18 +225,16 @@ public class CrearUsuarioVentana extends JDialog {
                     "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        // 3) Validación de usuario único
-        String username = txtUsername.getText().trim();
+        // 3) Único
         UsuarioDAO udao = new UsuarioDAO();
+        String username = txtUsername.getText().trim();
         if (udao.buscarPorNombreUsuario(username) != null) {
             JOptionPane.showMessageDialog(this,
-                    "Ese nombre de usuario ya está en uso. Elige otro.",
+                    "Ese nombre de usuario ya está en uso.",
                     "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        // 4) Asignamos datos al nuevo usuario
+        // 4) Datos
         newUser.setNombre(txtNombre.getText().trim());
         newUser.setApellidos(txtApellidos.getText().trim());
         newUser.setEmail(txtEmail.getText().trim());
@@ -277,27 +242,27 @@ public class CrearUsuarioVentana extends JDialog {
         newUser.setUsuario(username);
         newUser.setContrasena(HashUtil.hashSHA256(p1));
         newUser.setRol((Usuario.Rol)cbRol.getSelectedItem());
-
-        // 5) Guardamos en la BD con manejo de excepciones
+        // 5) Guardar con mensaje de consola
         try {
             udao.guardarUsuario(newUser);
         } catch (Exception ex) {
+            Throwable root = ex;
+            while (root.getCause() != null) root = root.getCause();
+            // Muestra exactamente el mensaje que saldría en consola
             JOptionPane.showMessageDialog(this,
-                    "Error al guardar usuario:\n" + ex.getMessage(),
+                    "Ese email ya está en uso.",
                     "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        // 6) Si es jugador, guardamos su info también
+        // 6) Info jugador
         if (newUser.getRol() == Usuario.Rol.JUGADOR) {
             newInfo.setUsuario(newUser);
             newInfo.setCategoria((String)cbCategoria.getSelectedItem());
-            // parseamos fecha de nacimiento
             String fechaTxt = txtNacimiento.getText().trim();
             if (!fechaTxt.isEmpty()) {
                 try {
-                    Date d = new SimpleDateFormat("d/M/yyyy").parse(fechaTxt);
-                    newInfo.setFechaNacimiento(d);
+                    newInfo.setFechaNacimiento(
+                            new SimpleDateFormat("d/M/yyyy").parse(fechaTxt));
                 } catch (ParseException pe) {
                     JOptionPane.showMessageDialog(this,
                             "Formato de fecha inválido. Usa d/M/yyyy",
@@ -314,18 +279,18 @@ public class CrearUsuarioVentana extends JDialog {
             try {
                 new JugadorInfoDAO().guardarJugadorInfo(newInfo);
             } catch (Exception ex) {
+                Throwable root = ex;
+                while (root.getCause() != null) root = root.getCause();
                 JOptionPane.showMessageDialog(this,
-                        "Error al guardar info de jugador:\n" + ex.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                        root.getMessage(),
+                        "Error al guardar info de jugador", JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
-
         // 7) Éxito
         JOptionPane.showMessageDialog(this,
                 "Usuario creado correctamente.",
                 "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
         dispose();
         onSuccess.run();
     }
@@ -352,21 +317,19 @@ public class CrearUsuarioVentana extends JDialog {
 
     private ImageIcon cargarAvatarCircular(Usuario u, int w, int h) {
         try {
-            byte[] f = (u != null ? u.getFotoUsuario() : null);
-            if (f != null && f.length > 0) {
-                BufferedImage src = ImageIO.read(new ByteArrayInputStream(f));
+            byte[] img = u != null ? u.getFotoUsuario() : null;
+            if (img != null && img.length > 0) {
+                BufferedImage src = ImageIO.read(new ByteArrayInputStream(img));
                 BufferedImage dst = new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g2 = dst.createGraphics();
-                g2.setRenderingHint(
-                        RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON
-                );
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setClip(new Ellipse2D.Float(0,0,w,h));
                 g2.drawImage(src,0,0,w,h,null);
                 g2.dispose();
                 return new ImageIcon(dst);
             }
-        } catch(Exception ignored){}
+        } catch (Exception ignored) {}
         return loadIcon("user_default.png", w, h);
     }
 

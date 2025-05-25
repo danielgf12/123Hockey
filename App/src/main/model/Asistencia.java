@@ -10,12 +10,12 @@ public class Asistencia {
     private AsistenciaId id;
 
     @ManyToOne
-    @MapsId("idEntrenamiento")
+    @MapsId("entrenamiento")      // coincide con el campo 'entrenamiento' del embeddable
     @JoinColumn(name = "id_entrenamiento")
     private Entrenamiento entrenamiento;
 
     @ManyToOne
-    @MapsId("idUsuario")
+    @MapsId("usuario")            // coincide con el campo 'usuario' del embeddable
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
 
@@ -23,11 +23,11 @@ public class Asistencia {
 
     public Asistencia() {}
 
-    public Asistencia(Entrenamiento entrenamiento, Usuario usuario, boolean asistencia) {
-        this.entrenamiento = entrenamiento;
-        this.usuario = usuario;
-        this.asistencia = asistencia;
-        this.id = new AsistenciaId(entrenamiento.getId(), usuario.getId());
+    public Asistencia(Entrenamiento ent, Usuario usr, boolean asist) {
+        this.entrenamiento = ent;
+        this.usuario       = usr;
+        this.asistencia    = asist;
+        this.id            = new AsistenciaId(ent.getId(), usr.getId());
     }
 
     // Getters y Setters

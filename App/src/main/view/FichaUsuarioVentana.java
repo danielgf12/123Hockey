@@ -206,7 +206,7 @@ public class FichaUsuarioVentana extends JFrame {
         dgbc.gridx = 2;
         datosPanel.add(createLabel("Partidos jugados:"), dgbc);
         JTextField txtPartidos = createField(
-                String.valueOf(new AsistenciaDAO().contarPartidos(targetUser.getId()))
+                String.valueOf(info!=null?info.getPartidosJugados():0)
         );
         txtPartidos.setEditable(false);
         dgbc.gridx = 3;

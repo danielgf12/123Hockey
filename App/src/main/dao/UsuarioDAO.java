@@ -79,13 +79,4 @@ public class UsuarioDAO {
             e.printStackTrace();
         }
     }
-
-    public void actualizarContrasena(int idUsuario, String hashNuevo) {
-        Usuario u = buscarPorId(idUsuario);
-        if (u!=null) {
-            u.setContrasena(hashNuevo);
-            actualizarUsuario(u);
-        }
-    }
-
 }
