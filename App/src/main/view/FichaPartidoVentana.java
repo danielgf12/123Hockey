@@ -12,6 +12,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -50,6 +52,9 @@ public class FichaPartidoVentana extends JFrame {
     }
 
     private void initUI() {
+        Image appIcon = loadIcon("logoSinFondo.png",32,32).getImage();
+        setIconImage(appIcon);
+
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(900, 600);
         setLocationRelativeTo(null);
@@ -269,5 +274,15 @@ public class FichaPartidoVentana extends JFrame {
         b.setBackground(ACCENT);
         b.setOpaque(true);
         b.setBorder(BorderFactory.createEmptyBorder(6,12,6,12));
+    }
+    private ImageIcon loadIcon(String name, int w, int h){
+        URL u = getClass().getClassLoader()
+                .getResource("assets/"+name);
+        Image img = (u!=null)
+                ? new ImageIcon(u).getImage()
+                : new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
+        return new ImageIcon(img.getScaledInstance(
+                w,h,Image.SCALE_SMOOTH
+        ));
     }
 }

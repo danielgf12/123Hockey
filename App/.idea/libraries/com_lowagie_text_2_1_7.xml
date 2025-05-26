@@ -1,0 +1,40 @@
+<component name="libraryTable">
+  <library name="com.lowagie.text-2.1.7">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/com.lowagie.text-2.1.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-beanutils-1.9.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-collections-3.2.1-1.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-collections-3.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-collections4-4.4-tests.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-collections4-4.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-digester-2.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-logging-1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/flatlaf-demo-3.5.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/hibernate-commons-annotations-5.1.2.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/hibernate-core-5.4.32.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jasperreports-6.16.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jasperreports-functions-6.3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jcommon-1.0.23.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jcommon-xml-1.0.23.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jfreechart-1.0.19.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jh.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jhall.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jhbasic.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/joda-time-2.9.9.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jsearch.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/mysql-connector-j-8.4.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/mysql-connector-java-8.0.22.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jasperreports-6.20.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jfreechart-1.0.19-demo.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/log4j-api-2.14.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/log4j-core-2.14.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/lib/commons-collections4-4.4-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/commons-collections4-4.4-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-collections4-4.4-test-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

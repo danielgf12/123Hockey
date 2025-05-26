@@ -48,6 +48,8 @@ public class CalendarioVentana extends JFrame {
     }
 
     private void initUI() {
+        Image appIcon = loadIcon("logoSinFondo.png",32,32).getImage();
+        setIconImage(appIcon);
 
         // — Calcula tamaños basados en pantalla —
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();

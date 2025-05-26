@@ -53,6 +53,8 @@ public class FichaEntrenamientoVentana extends JFrame {
     }
 
     private void initUI() {
+        Image appIcon = loadIcon("logoSinFondo.png",32,32).getImage();
+        setIconImage(appIcon);
         // Ventana
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(900, 600);
@@ -320,4 +322,5 @@ public class FichaEntrenamientoVentana extends JFrame {
                 : new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
         return new ImageIcon(img.getScaledInstance(w,h,Image.SCALE_SMOOTH));
     }
+
 }
