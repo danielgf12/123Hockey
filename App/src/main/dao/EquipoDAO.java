@@ -8,9 +8,20 @@ import org.hibernate.Transaction;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * DAO para gestionar las operaciones CRUD de la entidad Equipo.
+ * Utiliza Hibernate para acceder a la base de datos.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class EquipoDAO {
 
-    // Guardar un nuevo equipo
+    /**
+     * Guarda un nuevo equipo en la base de datos.
+     *
+     * @param equipo Equipo a guardar
+     */
     public void guardarEquipo(Equipo equipo) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -23,7 +34,12 @@ public class EquipoDAO {
         }
     }
 
-    // Buscar un equipo por ID
+    /**
+     * Busca un equipo por su ID.
+     *
+     * @param id ID del equipo
+     * @return El equipo encontrado o null si no existe
+     */
     public Equipo buscarPorId(int id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Equipo.class, id);
@@ -33,7 +49,11 @@ public class EquipoDAO {
         }
     }
 
-    // Listar todos los equipos
+    /**
+     * Lista todos los equipos registrados en la base de datos.
+     *
+     * @return Lista de equipos o null si ocurre un error
+     */
     public List<Equipo> listarTodos() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM Equipo", Equipo.class).list();
@@ -43,7 +63,11 @@ public class EquipoDAO {
         }
     }
 
-    // Actualizar un equipo
+    /**
+     * Actualiza un equipo existente.
+     *
+     * @param equipo Equipo con los datos actualizados
+     */
     public void actualizarEquipo(Equipo equipo) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -56,7 +80,11 @@ public class EquipoDAO {
         }
     }
 
-    // Eliminar un equipo
+    /**
+     * Elimina un equipo de la base de datos.
+     *
+     * @param equipo Equipo a eliminar
+     */
     public void eliminarEquipo(Equipo equipo) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -69,6 +97,12 @@ public class EquipoDAO {
         }
     }
 
+    /**
+     * Lista los equipos en los que está asociado un entrenador (por medio de la relación con EquipoJugador).
+     *
+     * @param idEntrenador ID del entrenador
+     * @return Lista de equipos o una lista vacía si ocurre un error
+     */
     public List<Equipo> listarPorEntrenador(int idEntrenador) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
@@ -81,6 +115,4 @@ public class EquipoDAO {
             return Collections.emptyList();
         }
     }
-
-
 }
