@@ -2,6 +2,13 @@ package main.model;
 
 import javax.persistence.*;
 
+/**
+ * Entidad que representa la alineación de un jugador en un partido.
+ * Está compuesta por una clave primaria embebida (id) que relaciona partido y usuario.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 @Entity
 @Table(name = "alineacion")
 public class Alineacion {
@@ -19,15 +26,22 @@ public class Alineacion {
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
 
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public Alineacion() {}
 
+    /**
+     * Crea una nueva alineación entre un partido y un usuario.
+     *
+     * @param partido Partido en el que participa el jugador
+     * @param usuario Jugador alineado
+     */
     public Alineacion(Partido partido, Usuario usuario) {
         this.partido = partido;
         this.usuario = usuario;
         this.id = new AlineacionId(partido.getId(), usuario.getId());
     }
-
-    // Getters y Setters
 
     public AlineacionId getId() { return id; }
 
