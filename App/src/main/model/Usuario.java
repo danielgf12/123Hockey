@@ -2,6 +2,13 @@ package main.model;
 
 import javax.persistence.*;
 
+/**
+ * Entidad que representa a un usuario del sistema, ya sea entrenador, delegado o jugador.
+ * Contiene información personal, de acceso y de afiliación al club.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 @Entity
 @Table(name = "usuario")
 public class Usuario {
@@ -35,10 +42,25 @@ public class Usuario {
 
     private String ciudad;
 
-    // Constructor vacío
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public Usuario() {}
 
-    // Constructor completo (excepto ID que es autogenerado)
+    /**
+     * Constructor completo para inicializar los campos del usuario.
+     * 
+     * @param nombre       Nombre del usuario
+     * @param apellidos    Apellidos del usuario
+     * @param email        Correo electrónico (único)
+     * @param telefono     Teléfono de contacto
+     * @param contrasena   Contraseña cifrada
+     * @param rol          Rol del usuario (ENTRENADOR, DELEGADO, JUGADOR)
+     * @param usuario      Nombre de usuario (único)
+     * @param fotoUsuario  Foto de perfil (opcional)
+     * @param club         Club al que pertenece
+     * @param ciudad       Ciudad del usuario
+     */
     public Usuario(String nombre, String apellidos, String email, String telefono,
                    String contrasena, Rol rol, String usuario, byte[] fotoUsuario,
                    String club, String ciudad) {
@@ -53,8 +75,6 @@ public class Usuario {
         this.club = club;
         this.ciudad = ciudad;
     }
-
-    // Getters y Setters
 
     public int getId() { return id; }
 
@@ -88,7 +108,9 @@ public class Usuario {
     public String getCiudad() { return ciudad; }
     public void setCiudad(String ciudad) { this.ciudad = ciudad; }
 
-    // Enum interno para rol
+    /**
+     * Enumeración interna que define el rol del usuario en la aplicación.
+     */
     public enum Rol {
         ENTRENADOR, DELEGADO, JUGADOR
     }
