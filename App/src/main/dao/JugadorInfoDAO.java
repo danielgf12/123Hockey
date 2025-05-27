@@ -10,9 +10,20 @@ import org.hibernate.Transaction;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * DAO para gestionar las operaciones CRUD y cálculos específicos de la entidad JugadorInfo.
+ * Utiliza Hibernate para interactuar con la base de datos.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class JugadorInfoDAO {
 
-    // Guardar nueva info de jugador
+    /**
+     * Guarda la información de un nuevo jugador.
+     *
+     * @param info Objeto JugadorInfo a guardar
+     */
     public void guardarJugadorInfo(JugadorInfo info) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -25,7 +36,12 @@ public class JugadorInfoDAO {
         }
     }
 
-    // Buscar por ID de JugadorInfo
+    /**
+     * Busca la información de un jugador por su ID.
+     *
+     * @param id ID de la entidad JugadorInfo
+     * @return Objeto JugadorInfo o null si no existe
+     */
     public JugadorInfo buscarPorId(int id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(JugadorInfo.class, id);
@@ -35,7 +51,12 @@ public class JugadorInfoDAO {
         }
     }
 
-    // Buscar por ID de usuario (versión original)
+    /**
+     * Busca la información de un jugador por ID de usuario.
+     *
+     * @param idUsuario ID del usuario
+     * @return Objeto JugadorInfo o null si no existe
+     */
     public JugadorInfo buscarPorUsuarioId(int idUsuario) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
@@ -49,12 +70,21 @@ public class JugadorInfoDAO {
         }
     }
 
-    // Nuevo alias para que puedas llamar buscarPorUsuario(int)
+    /**
+     * Alias de {@link #buscarPorUsuarioId(int)} para simplificar llamadas.
+     *
+     * @param idUsuario ID del usuario
+     * @return Objeto JugadorInfo o null si no existe
+     */
     public JugadorInfo buscarPorUsuario(int idUsuario) {
         return buscarPorUsuarioId(idUsuario);
     }
 
-    // Listar todos
+    /**
+     * Lista todos los registros de JugadorInfo existentes.
+     *
+     * @return Lista de JugadorInfo o null si ocurre un error
+     */
     public List<JugadorInfo> listarTodos() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM JugadorInfo", JugadorInfo.class).list();
@@ -64,7 +94,11 @@ public class JugadorInfoDAO {
         }
     }
 
-    // Actualizar JugadorInfo
+    /**
+     * Actualiza un registro de JugadorInfo existente.
+     *
+     * @param info Objeto JugadorInfo con los datos actualizados
+     */
     public void actualizarJugadorInfo(JugadorInfo info) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -77,7 +111,11 @@ public class JugadorInfoDAO {
         }
     }
 
-    // Eliminar por usuario
+    /**
+     * Elimina la información de un jugador a partir de su ID de usuario.
+     *
+     * @param usuarioId ID del usuario
+     */
     public void eliminarPorUsuarioId(int usuarioId) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -93,9 +131,10 @@ public class JugadorInfoDAO {
     }
 
     /**
-     * Recalcula y actualiza el campo partidos_jugados en JugadorInfo
-     * contando todos los partidos ya pasados en los que el jugador estuvo convocado
-     * (i.e. perteneciente a cualquier equipo en la tabla EquipoJugador).
+     * Recalcula y actualiza el campo "partidosJugados" en JugadorInfo
+     * contando los partidos pasados en los que el jugador estuvo convocado.
+     *
+     * @param idUsuario ID del usuario (jugador)
      */
     public void actualizarPartidosJugados(int idUsuario) {
         Transaction tx = null;
@@ -105,9 +144,9 @@ public class JugadorInfoDAO {
             Long count = session.createQuery(
                     "SELECT COUNT(p) " +
                             "FROM Partido p, EquipoJugador ej " +
-                            " WHERE ej.equipo.id = p.equipo.id " +
-                            "   AND ej.usuario.id = :uid " +
-                            "   AND p.fecha < :ahora",
+                            "WHERE ej.equipo.id = p.equipo.id " +
+                            "AND ej.usuario.id = :uid " +
+                            "AND p.fecha < :ahora",
                     Long.class)
                     .setParameter("uid", idUsuario)
                     .setParameter("ahora", new Date())
