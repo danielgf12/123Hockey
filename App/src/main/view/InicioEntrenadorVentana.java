@@ -19,10 +19,20 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Ventana principal para el rol de entrenador.
+ * Muestra cabecera, botones de navegación y paneles de próximos eventos y resumen.
+ * @author Daniel García
+ * @version 1.0
+ */
 public class InicioEntrenadorVentana extends JFrame {
 
+    /**
+     * Constructor de la ventana de inicio para entrenadores.
+     * Configura la interfaz completa basándose en el usuario pasado.
+     * @param entrenador objeto Usuario con rol ENTRENADOR
+     */
     public InicioEntrenadorVentana(Usuario entrenador) {
-        // Ventana principal
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         getContentPane().setBackground(new Color(18, 18, 18));
@@ -34,7 +44,6 @@ public class InicioEntrenadorVentana extends JFrame {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         int W = screen.width, H = screen.height;
 
-        // Márgenes y proporciones
         int mX        = (int)(W * 0.04);
         int headerH   = (int)(H * 0.07);
         int sepY      = mX + headerH;
@@ -48,31 +57,27 @@ public class InicioEntrenadorVentana extends JFrame {
         int panelH    = (int)(H * 0.30);
         int innerMX   = (int)(panelW * 0.08);
 
-        // ----------------------------------------------------
-        // HEADER
-        // ----------------------------------------------------
-        // Icono
         JLabel menu = new JLabel(loadIcon("logoSinFondo.png", headerH-16, headerH-16));
         menu.setBounds(mX, mX, headerH-16, headerH-16);
         add(menu);
-        // Título
+
         JLabel title = new JLabel("123HOCKEY!");
         title.setFont(new Font("Arial Black", Font.BOLD, headerH/2 + 4));
         title.setForeground(new Color(49,109,233));
         title.setBounds(mX + headerH, mX-6, (int)(W*0.3), headerH);
         add(title);
-        // Separador
+
         JSeparator sep = new JSeparator();
         sep.setForeground(new Color(49,109,233));
         sep.setBounds(mX, sepY, W - 2*mX, 2);
         add(sep);
-        // Avatar
+
         int avatarSize = headerH - 16;
         int avatarX    = W - mX - avatarSize;
         JLabel avatar  = new JLabel(cargarAvatar(entrenador, avatarSize, avatarSize));
         avatar.setBounds(avatarX, mX, avatarSize, avatarSize);
         add(avatar);
-        // Saludo
+
         int greetW = avatarX - 2*mX + 30;
         JLabel hola = new JLabel("Hola, " + entrenador.getNombre(), SwingConstants.RIGHT);
         hola.setFont(new Font("Segoe UI", Font.BOLD, headerH/2 - 2));
@@ -80,9 +85,6 @@ public class InicioEntrenadorVentana extends JFrame {
         hola.setBounds(mX, mX, greetW, avatarSize);
         add(hola);
 
-        // ----------------------------------------------------
-        // BOTONES DE MENÚ
-        // ----------------------------------------------------
         int arcBtn   = btnH / 3;
         int bordBtn  = 2;
         Color normalBg     = new Color(18, 18, 18);
@@ -110,19 +112,14 @@ public class InicioEntrenadorVentana extends JFrame {
         btnCalendario.addActionListener(e -> { new CalendarioVentana(entrenador); dispose(); });
         add(btnCalendario);
 
-        // ----------------------------------------------------
-        // PANEL “PRÓXIMOS EVENTOS”
-        // ----------------------------------------------------
         JPanel pE = new JPanel(null) {
             @Override protected void paintComponent(Graphics g) {
                 int w = getWidth(), h = getHeight(), arc = h/10;
                 Graphics2D g2 = (Graphics2D)g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
-                // fondo redondeado
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0,0,w,h,arc,arc);
-                // borde
                 g2.setStroke(new BasicStroke(3));
                 g2.setColor(new Color(29,29,29));
                 double off = 3/2.0;
@@ -151,7 +148,6 @@ public class InicioEntrenadorVentana extends JFrame {
         int rowsE = 2;
         int gapE = (availE - rowsE*iconE)/(rowsE+1);
 
-        // Cálculo de próximos partido y entrenamiento (global)
         Date now = new Date();
         PartidoDAO partidoDAO = new PartidoDAO();
         EntrenamientoDAO entDAO  = new EntrenamientoDAO();
@@ -190,9 +186,6 @@ public class InicioEntrenadorVentana extends JFrame {
                     panelH+100);
         }
 
-        // ----------------------------------------------------
-        // PANEL “RESUMEN GENERAL”
-        // ----------------------------------------------------
         JPanel pR = new JPanel(null) {
             @Override protected void paintComponent(Graphics g) {
                 int w = getWidth(), h = getHeight(), arc = h/10;
@@ -226,7 +219,6 @@ public class InicioEntrenadorVentana extends JFrame {
         int rowsR = 3;
         int gapR = (availR - rowsR*iconR)/(rowsR+1);
 
-        // Datos dinámicos
         EquipoDAO equipoDAO       = new EquipoDAO();
         List<Equipo> equipos      = equipoDAO.listarTodos();
         int numEquipos            = equipos.size();
@@ -234,7 +226,6 @@ public class InicioEntrenadorVentana extends JFrame {
         JugadorInfoDAO jugadorDAO = new JugadorInfoDAO();
         int numJugadores          = jugadorDAO.listarTodos().size();
 
-        // Media de asistencia solo sobre entrenamientos pasados:
         AsistenciaDAO asisDAO           = new AsistenciaDAO();
         EntrenamientoDAO entDAO2        = new EntrenamientoDAO();
         EquipoJugadorDAO ejDAO2         = new EquipoJugadorDAO();
@@ -242,14 +233,12 @@ public class InicioEntrenadorVentana extends JFrame {
         int equiposContados             = 0;
 
         for (Equipo e : equipos) {
-            // entrenamientos pasados de este equipo
             List<Entrenamiento> pasados = entDAO2.listarPorEquipo(e.getId())
                     .stream()
                     .filter(en -> en.getFecha().before(now))
                     .collect(Collectors.toList());
             if (pasados.isEmpty()) continue;
 
-            // número de jugadores del equipo
             int numJugEquipo = ejDAO2.listarPorEquipo(e.getId()).size();
 
             int totalInvit = pasados.size() * numJugEquipo;
@@ -286,9 +275,24 @@ public class InicioEntrenadorVentana extends JFrame {
         setVisible(true);
     }
 
-    // ---------------------------------------
-    // Métodos auxiliares
-    // ---------------------------------------
+    /**
+     * Crea un JButton con estilo redondeado y colores personalizados.
+     *
+     * @param text etiqueta del botón
+     * @param arc  radio de las esquinas
+     * @param bord grosor del borde
+     * @param bg   color de fondo normal
+     * @param br   color del borde normal
+     * @param hb   color de fondo al pasar el ratón
+     * @param hbr  color del borde al pasar el ratón
+     * @param pb   color de fondo al pulsar
+     * @param pbr  color del borde al pulsar
+     * @param x    posición X
+     * @param y    posición Y
+     * @param w    ancho
+     * @param h    alto
+     * @return     JButton personalizado
+     */
     private JButton crearBotonRedondeado(String text,
                                          int arc, int bord,
                                          Color bg, Color br,
@@ -315,7 +319,7 @@ public class InicioEntrenadorVentana extends JFrame {
                 g2.dispose();
                 super.paintComponent(g);
             }
-            @Override protected void paintBorder(Graphics g) { /* no border */ }
+            @Override protected void paintBorder(Graphics g) { }
         };
         b.setOpaque(false);
         b.setContentAreaFilled(false);
@@ -327,6 +331,14 @@ public class InicioEntrenadorVentana extends JFrame {
         return b;
     }
 
+    /**
+     * Carga y recorta la imagen de avatar de un usuario en forma circular.
+     *
+     * @param u usuario del cual obtener la foto
+     * @param w ancho en píxeles
+     * @param h alto en píxeles
+     * @return  ImageIcon con la imagen recortada o defecto si ocurre un error
+     */
     private ImageIcon cargarAvatar(Usuario u, int w, int h) {
         try {
             byte[] f = u.getFotoUsuario();
@@ -345,6 +357,14 @@ public class InicioEntrenadorVentana extends JFrame {
         return loadIcon("user_default.png", w, h);
     }
 
+    /**
+     * Carga un icono desde recursos o ruta local y lo redimensiona.
+     *
+     * @param name nombre del archivo
+     * @param w    ancho deseado
+     * @param h    alto deseado
+     * @return     ImageIcon redimensionado
+     */
     private ImageIcon loadIcon(String name, int w, int h) {
         URL u = getClass().getClassLoader().getResource("assets/" + name);
         Image img = (u!=null)
@@ -353,6 +373,18 @@ public class InicioEntrenadorVentana extends JFrame {
         return new ImageIcon(img.getScaledInstance(w,h,Image.SCALE_SMOOTH));
     }
 
+    /**
+     * Añade un icono y un texto a un panel en posiciones definidas.
+     *
+     * @param panel     panel de destino
+     * @param iconFile  nombre del archivo de icono
+     * @param text      texto a mostrar
+     * @param x         posición X dentro del panel
+     * @param y         posición Y dentro del panel
+     * @param iconSize  tamaño del icono
+     * @param textWidth ancho reservado para el texto
+     * @param panelH    altura del panel, para calcular fuente
+     */
     private void addIconAndText(JPanel panel,
                                 String iconFile, String text,
                                 int x, int y, int iconSize,
@@ -367,10 +399,16 @@ public class InicioEntrenadorVentana extends JFrame {
         lText.setFont(new Font("Segoe UI", Font.PLAIN, (int)(panelH*0.065)));
         int th = lText.getPreferredSize().height;
         int ty = y + (iconSize - th)/2;
-        lText.setBounds(x + iconSize + innerMX(panel), ty, textWidth, th);
+        lText.setBounds(x + innerMX(panel), ty, textWidth, th);
         panel.add(lText);
     }
 
+    /**
+     * Calcula el margen interno horizontal de un panel.
+     *
+     * @param panel panel de referencia
+     * @return      margen interno en píxeles
+     */
     private int innerMX(JPanel panel) {
         return (int)(panel.getWidth()*0.08);
     }
