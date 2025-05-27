@@ -2,6 +2,13 @@ package main.model;
 
 import javax.persistence.*;
 
+/**
+ * Entidad que representa un equipo.
+ * Incluye información como nombre, liga, categoría, club, ciudad, país y una imagen opcional.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 @Entity
 @Table(name = "equipo")
 public class Equipo {
@@ -26,10 +33,22 @@ public class Equipo {
     @Column(name = "fotoEquipo")
     private byte[] fotoEquipo;
 
-    // Constructor vacío
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public Equipo() {}
 
-    // Constructor completo (excepto ID que es autogenerado)
+    /**
+     * Constructor que inicializa todos los atributos del equipo, excepto el ID.
+     *
+     * @param nombre      Nombre del equipo
+     * @param liga        Liga en la que participa
+     * @param categoria   Categoría del equipo
+     * @param club        Club al que pertenece
+     * @param ciudad      Ciudad del equipo
+     * @param pais        País del equipo
+     * @param fotoEquipo  Imagen del equipo (opcional)
+     */
     public Equipo(String nombre, String liga, String categoria, String club,
                   String ciudad, String pais, byte[] fotoEquipo) {
         this.nombre = nombre;
@@ -40,8 +59,6 @@ public class Equipo {
         this.pais = pais;
         this.fotoEquipo = fotoEquipo;
     }
-
-    // Getters y Setters
 
     public int getId() { return id; }
 
