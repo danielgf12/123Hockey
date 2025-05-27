@@ -18,10 +18,25 @@ import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.List;
+// JasperReports
+import main.util.HibernateUtil;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.util.JRLoader;
+import net.sf.jasperreports.swing.JRViewer;
+import net.sf.jasperreports.view.JasperViewer;
+
 
 public class FichaEquipoVentana extends JDialog {
     private static final Color BG     = new Color(18,18,18);
@@ -175,6 +190,12 @@ public class FichaEquipoVentana extends JDialog {
             btnEditSave = new JButton("Editar datos");
             btnEditSave.addActionListener(e -> toggleEdit());
             footer.add(btnEditSave);
+            // ——— Botón “Ver informe” ———————————
+            JButton btnInforme = new JButton("Ver informe");
+            btnInforme.addActionListener(e -> generarInforme());
+            footer.add(btnInforme);
+// —————————————————————————————————————
+
 
             JButton btnEliminar = new JButton("Eliminar equipo");
             btnEliminar.addActionListener(e -> {
@@ -202,6 +223,85 @@ public class FichaEquipoVentana extends JDialog {
 
         cargarDatos();
     }
+
+    /**
+     * Carga y rellena AsistenciaPorEquipo.jasper desde /assets,
+     * pidiendo al usuario FechaDesde y FechaHasta por diálogo.
+     */
+    /**
+     * Lanza AsistenciaPorEquipo.jasper (precompilado) pidiendo FechaDesde/FechaHasta
+     * y rellenándolo con la conexión JDBC que usa Hibernate.
+     */
+    /**
+     * Carga AsistenciaPorEquipo.jasper, pide FechaDesde/FechaHasta manualmente,
+     * y lo rellena pasando los tres parámetros requeridos.
+     */
+    private void generarInforme() {
+        try {
+            // 1) cargar .jasper desde /assets
+            InputStream input = getClass().getResourceAsStream("/assets/AsistenciaPorEquipo.jasper");
+            if (input == null) {
+                JOptionPane.showMessageDialog(this,
+                        "No se encontró AsistenciaPorEquipo.jasper en assets/",
+                        "Error de Ruta", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // 2) registrar el driver MySQL
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // 3) abrir conexión JDBC
+            Connection conexion = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/123Hockey",
+                    "root", ""
+            );
+
+            // 4) compilar/deserializar el informe
+            JasperReport reporte = (JasperReport) JRLoader.loadObject(input);
+
+            // 5) solicitar rango de fechas
+            JSpinner spDesde = new JSpinner(new SpinnerDateModel());
+            JSpinner spHasta = new JSpinner(new SpinnerDateModel());
+            spDesde.setEditor(new JSpinner.DateEditor(spDesde, "yyyy-MM-dd"));
+            spHasta.setEditor(new JSpinner.DateEditor(spHasta, "yyyy-MM-dd"));
+            Object[] msg = {"Fecha desde:", spDesde, "Fecha hasta:", spHasta};
+            if (JOptionPane.showConfirmDialog(
+                    this, msg, "Seleccione rango de fechas",
+                    JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) {
+                conexion.close();
+                return;
+            }
+            Date dDesde = (Date) spDesde.getValue();
+            Date dHasta = (Date) spHasta.getValue();
+            // convertimos a Timestamp porque el parámetro lo espera
+            Timestamp tsDesde = new Timestamp(dDesde.getTime());
+            Timestamp tsHasta = new Timestamp(dHasta.getTime());
+
+            // 6) preparar parámetros
+            Map<String,Object> parametros = new HashMap<>();
+            parametros.put("Equipo",      equipo.getId());
+            parametros.put("FechaDesde",  tsDesde);
+            parametros.put("FechaHasta",  tsHasta);
+
+            // 7) llenar el informe
+            JasperPrint jasperPrint = JasperFillManager.fillReport(
+                    reporte, parametros, conexion
+            );
+            dispose();
+            // 8) mostrarlo
+            JasperViewer.viewReport(jasperPrint, false);
+
+            // 9) cerrar conexión
+            conexion.close();
+
+        } catch (ClassNotFoundException | SQLException | JRException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                    "Error al generar informe:\n" + ex.getMessage(),
+                    "Error JasperReport", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
 
     private void toggleEdit() {
         editing = !editing;
@@ -376,7 +476,6 @@ public class FichaEquipoVentana extends JDialog {
         } catch(Exception ignored){}
         return loadIcon("user_default.png", w, h);
     }
-
     private ImageIcon loadIcon(String name, int w, int h) {
         URL res = getClass().getClassLoader().getResource("assets/"+name);
         Image img = (res != null)
