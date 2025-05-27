@@ -8,9 +8,20 @@ import org.hibernate.Transaction;
 
 import java.util.List;
 
+/**
+ * DAO para gestionar las operaciones CRUD de la entidad Asistencia.
+ * Utiliza Hibernate para el acceso a la base de datos.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class AsistenciaDAO {
 
-    // Guardar nueva asistencia
+    /**
+     * Guarda una nueva asistencia en la base de datos.
+     *
+     * @param asistencia Asistencia a guardar
+     */
     public void guardarAsistencia(Asistencia asistencia) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -23,7 +34,13 @@ public class AsistenciaDAO {
         }
     }
 
-    // Buscar una asistencia concreta
+    /**
+     * Busca una asistencia concreta por entrenamiento y usuario.
+     *
+     * @param idEntrenamiento ID del entrenamiento
+     * @param idUsuario       ID del usuario
+     * @return La asistencia encontrada o null si no existe
+     */
     public Asistencia buscarAsistencia(int idEntrenamiento, int idUsuario) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             AsistenciaId id = new AsistenciaId(idEntrenamiento, idUsuario);
@@ -34,7 +51,11 @@ public class AsistenciaDAO {
         }
     }
 
-    // Listar todas las asistencias
+    /**
+     * Lista todas las asistencias de la base de datos.
+     *
+     * @return Lista de asistencias o null si ocurre un error
+     */
     public List<Asistencia> listarTodas() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM Asistencia", Asistencia.class).list();
@@ -44,12 +65,16 @@ public class AsistenciaDAO {
         }
     }
 
-    // Listar asistencias por entrenamiento
+    /**
+     * Lista las asistencias asociadas a un entrenamiento.
+     *
+     * @param idEntrenamiento ID del entrenamiento
+     * @return Lista de asistencias o null si ocurre un error
+     */
     public List<Asistencia> listarPorEntrenamiento(int idEntrenamiento) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
-                    "FROM Asistencia a " +
-                            " WHERE a.entrenamiento.id = :idEntrenamiento",
+                    "FROM Asistencia a WHERE a.entrenamiento.id = :idEntrenamiento",
                     Asistencia.class)
                     .setParameter("idEntrenamiento", idEntrenamiento)
                     .list();
@@ -59,8 +84,12 @@ public class AsistenciaDAO {
         }
     }
 
-
-    // Listar asistencias por jugador
+    /**
+     * Lista las asistencias asociadas a un jugador.
+     *
+     * @param idUsuario ID del jugador
+     * @return Lista de asistencias o null si ocurre un error
+     */
     public List<Asistencia> listarPorJugador(int idUsuario) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM Asistencia WHERE usuario.id = :id", Asistencia.class)
@@ -72,7 +101,11 @@ public class AsistenciaDAO {
         }
     }
 
-    // Actualizar asistencia
+    /**
+     * Actualiza una asistencia existente en la base de datos.
+     *
+     * @param asistencia Asistencia a actualizar
+     */
     public void actualizarAsistencia(Asistencia asistencia) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -85,7 +118,11 @@ public class AsistenciaDAO {
         }
     }
 
-    // Eliminar asistencia
+    /**
+     * Elimina todas las asistencias asociadas a un usuario.
+     *
+     * @param usuarioId ID del usuario
+     */
     public void eliminarPorUsuario(int usuarioId) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -100,6 +137,12 @@ public class AsistenciaDAO {
         }
     }
 
+    /**
+     * Calcula el porcentaje medio de asistencia de un equipo.
+     *
+     * @param idEquipo ID del equipo
+     * @return Porcentaje de asistencia (0 si no hay datos)
+     */
     public double calcularAsistenciaMediaPorEquipo(int idEquipo) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Long total = session.createQuery(
@@ -124,16 +167,15 @@ public class AsistenciaDAO {
 
     /**
      * Busca la asistencia de un jugador a un entrenamiento concreto.
-     * @param idEntrenamiento id del entrenamiento
-     * @param idUsuario       id del usuario (jugador)
-     * @return la Asistencia si existe, o null si no hay registro
+     *
+     * @param idEntrenamiento ID del entrenamiento
+     * @param idUsuario       ID del usuario (jugador)
+     * @return Asistencia si existe, o null si no hay registro
      */
     public Asistencia buscarPorEntrenamientoYJugador(int idEntrenamiento, int idUsuario) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
-                    "FROM Asistencia a " +
-                            " WHERE a.entrenamiento.id = :entId " +
-                            "   AND a.usuario.id       = :usrId",
+                    "FROM Asistencia a WHERE a.entrenamiento.id = :entId AND a.usuario.id = :usrId",
                     Asistencia.class
             )
                     .setParameter("entId", idEntrenamiento)
@@ -145,12 +187,16 @@ public class AsistenciaDAO {
         }
     }
 
-
+    /**
+     * Cuenta el número de asistencias confirmadas de un jugador.
+     *
+     * @param idUsuario ID del jugador
+     * @return Número de asistencias
+     */
     public long contarAsistencias(int idUsuario) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
-                    "SELECT COUNT(a) FROM Asistencia a " +
-                            "WHERE a.usuario.id = :idUsuario AND a.asistencia = true",
+                    "SELECT COUNT(a) FROM Asistencia a WHERE a.usuario.id = :idUsuario AND a.asistencia = true",
                     Long.class
             )
                     .setParameter("idUsuario", idUsuario)
