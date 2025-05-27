@@ -12,8 +12,20 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.net.URL;
 
+/**
+ * Ventana de registro para entrenadores. Permite introducir datos personales y
+ * de acceso, y redirige a la ventana correspondiente según el rol creado.
+ * Utiliza componentes personalizados con placeholders y estilos redondeados.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class RegistroVentana extends JFrame {
 
+    /**
+     * Constructor que inicializa y muestra la interfaz gráfica de registro.
+     * Incluye campos personalizados, lógica de validación y navegación entre ventanas.
+     */
     public RegistroVentana() {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 
@@ -25,13 +37,13 @@ public class RegistroVentana extends JFrame {
         Image appIcon = loadIcon("logoSinFondo.png", 32, 32).getImage();
         setIconImage(appIcon);
 
-        int arcField      = 15;             // radio de las esquinas de los campos
-        int bordField     = 1;              // grosor de los bordes de los campos
+        int arcField      = 15;
+        int bordField     = 1;
         Color fieldBg     = new Color(18, 18, 18);
         Color fieldBorder = new Color(49, 109, 233);
 
-        int arcBtn   = 45 / 3;              // radio de las esquinas del botón
-        int bordBtn  = 2;                   // grosor del borde del botón
+        int arcBtn   = 45 / 3;
+        int bordBtn  = 2;
         Color normalBg     = new Color(49, 109, 233);
         Color hoverBg      = new Color(52, 115, 255);
         Color pressBg      = new Color(142, 173, 233);
@@ -42,18 +54,16 @@ public class RegistroVentana extends JFrame {
         getContentPane().setBackground(new Color(18, 18, 18));
         setLayout(null);
 
-        // ---------- Imagen izquierda escalada
         ImageIcon icono = new ImageIcon("src/assets/logoSinFondo.png");
         Image imagenEscalada = icono.getImage().getScaledInstance(420, 420, Image.SCALE_SMOOTH);
         JLabel imagen = new JLabel(new ImageIcon(imagenEscalada));
         imagen.setBounds(175, 170, 420, 420);
         add(imagen);
 
-        // ---------- Título encima de la imagen
         JLabel titulo = new JLabel("123HOCKEY!");
-        titulo.setFont(new Font("Arial Black", Font.BOLD, 52)); // Horizon simulada
+        titulo.setFont(new Font("Arial Black", Font.BOLD, 52));
         titulo.setForeground(new Color(49, 109, 233));
-        titulo.setBounds(185, 90, 500, 60); // centrado arriba de la imagen
+        titulo.setBounds(185, 90, 500, 60);
         add(titulo);
 
         JLabel subtitulo = new JLabel("Regístrate aquí");
@@ -62,7 +72,6 @@ public class RegistroVentana extends JFrame {
         subtitulo.setBounds(800, 90, 300, 40);
         add(subtitulo);
 
-        // ---------- Campos redondeados con placeholder
         JTextField nombre      = createField("Nombre",        700, 150, 380, arcField, bordField, fieldBg, fieldBorder);
         JTextField apellido1   = createField("Apellido 1",    700, 210, 180, arcField, bordField, fieldBg, fieldBorder);
         JTextField apellido2   = createField("Apellido 2",    900,210, 180, arcField, bordField, fieldBg, fieldBorder);
@@ -79,7 +88,6 @@ public class RegistroVentana extends JFrame {
         add(pwd);
         add(confirm);
 
-        // ---------- Botón redondeado “Registrarse”
         JButton btnRegistrar = new JButton("Registrarse") {
             @Override
             protected void paintComponent(Graphics g) {
@@ -91,11 +99,9 @@ public class RegistroVentana extends JFrame {
                 Color bg = m.isPressed() ? pressBg :
                         m.isRollover()? hoverBg : normalBg;
 
-                // fondo
                 g2.setColor(bg);
                 g2.fillRoundRect(0, 0, w, h, arcBtn, arcBtn);
 
-                // borde
                 g2.setStroke(new BasicStroke(bordBtn));
                 g2.setColor(bg);
                 g2.drawRoundRect(bordBtn/2, bordBtn/2, w-bordBtn, h-bordBtn, arcBtn, arcBtn);
@@ -103,7 +109,7 @@ public class RegistroVentana extends JFrame {
                 g2.dispose();
                 super.paintComponent(g);
             }
-            @Override protected void paintBorder(Graphics g) { /* nada */ }
+            @Override protected void paintBorder(Graphics g) {}
         };
         btnRegistrar.setOpaque(false);
         btnRegistrar.setContentAreaFilled(false);
@@ -123,7 +129,6 @@ public class RegistroVentana extends JFrame {
             );
             if (u != null) {
                 dispose();
-
                 switch (u.getRol()) {
                     case ENTRENADOR:
                         new InicioEntrenadorVentana(u);
@@ -142,7 +147,6 @@ public class RegistroVentana extends JFrame {
             }
         });
 
-        // ---------- Enlace inferior
         JLabel loginLink = new JLabel(
                 "<html>"
                         + "<span style='color:#999999;'>¿Ya tienes cuenta? </span>"
@@ -164,6 +168,14 @@ public class RegistroVentana extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Carga un icono desde la carpeta assets con el tamaño especificado.
+     *
+     * @param name Nombre del archivo de imagen
+     * @param w    Ancho deseado
+     * @param h    Alto deseado
+     * @return ImageIcon redimensionado
+     */
     private ImageIcon loadIcon(String name, int w, int h) {
         URL u = getClass().getClassLoader().getResource("assets/" + name);
         Image img = (u != null)
@@ -172,12 +184,24 @@ public class RegistroVentana extends JFrame {
         return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH));
     }
 
+    /**
+     * Crea un campo de texto con estilo redondeado y placeholder.
+     *
+     * @param placeholder Texto por defecto
+     * @param x           Posición x
+     * @param y           Posición y
+     * @param w           Ancho
+     * @param arc         Radio de redondeo
+     * @param bord        Grosor del borde
+     * @param bg          Color de fondo
+     * @param border      Color del borde
+     * @return JTextField personalizado
+     */
     private JTextField createField(String placeholder, int x, int y, int w,
                                    int arc, int bord,
                                    Color bg, Color border) {
         JTextField f = new JTextField(placeholder) {
-            @Override
-            protected void paintComponent(Graphics g) {
+            @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D)g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
@@ -186,8 +210,7 @@ public class RegistroVentana extends JFrame {
                 g2.dispose();
                 super.paintComponent(g);
             }
-            @Override
-            protected void paintBorder(Graphics g) {
+            @Override protected void paintBorder(Graphics g) {
                 Graphics2D g2 = (Graphics2D)g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
@@ -198,15 +221,15 @@ public class RegistroVentana extends JFrame {
                 g2.dispose();
             }
         };
+
         f.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         f.setForeground(Color.GRAY);
         f.setBackground(bg);
         f.setOpaque(false);
         f.setBorder(BorderFactory.createEmptyBorder(0,12,0,12));
         f.setBounds(x, y, w, 45);
-
-        // click→focus
         f.setFocusable(false);
+
         f.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
                 f.setFocusable(true);
@@ -227,15 +250,28 @@ public class RegistroVentana extends JFrame {
                 }
             }
         });
+
         return f;
     }
 
+    /**
+     * Crea un campo de contraseña personalizado con placeholder y estilo redondeado.
+     *
+     * @param placeholder Texto por defecto
+     * @param x           Posición x
+     * @param y           Posición y
+     * @param w           Ancho
+     * @param arc         Radio de redondeo
+     * @param bord        Grosor del borde
+     * @param bg          Color de fondo
+     * @param border      Color del borde
+     * @return JPasswordField personalizado
+     */
     private JPasswordField createPasswordField(String placeholder, int x, int y, int w,
                                                int arc, int bord,
                                                Color bg, Color border) {
         JPasswordField p = new JPasswordField(placeholder) {
-            @Override
-            protected void paintComponent(Graphics g) {
+            @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D)g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
@@ -244,8 +280,7 @@ public class RegistroVentana extends JFrame {
                 g2.dispose();
                 super.paintComponent(g);
             }
-            @Override
-            protected void paintBorder(Graphics g) {
+            @Override protected void paintBorder(Graphics g) {
                 Graphics2D g2 = (Graphics2D)g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
@@ -256,6 +291,7 @@ public class RegistroVentana extends JFrame {
                 g2.dispose();
             }
         };
+
         p.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         p.setForeground(Color.GRAY);
         p.setEchoChar((char)0);
@@ -263,9 +299,8 @@ public class RegistroVentana extends JFrame {
         p.setOpaque(false);
         p.setBorder(BorderFactory.createEmptyBorder(0,12,0,12));
         p.setBounds(x, y, w, 45);
-
-        // click→focus + placeholder
         p.setFocusable(false);
+
         p.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
                 p.setFocusable(true);
@@ -288,7 +323,7 @@ public class RegistroVentana extends JFrame {
                 }
             }
         });
-        return p;
 
+        return p;
     }
 }
