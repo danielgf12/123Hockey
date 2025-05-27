@@ -7,9 +7,20 @@ import org.hibernate.Transaction;
 
 import java.util.List;
 
+/**
+ * DAO para gestionar las operaciones CRUD de la entidad Usuario.
+ * Utiliza Hibernate para acceder a la base de datos.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class UsuarioDAO {
 
-    // Guardar un nuevo usuario
+    /**
+     * Guarda un nuevo usuario en la base de datos.
+     *
+     * @param usuario Usuario a guardar
+     */
     public void guardarUsuario(Usuario usuario) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -22,7 +33,12 @@ public class UsuarioDAO {
         }
     }
 
-    // Buscar un usuario por ID
+    /**
+     * Busca un usuario por su ID.
+     *
+     * @param id ID del usuario
+     * @return Usuario encontrado o null si no existe
+     */
     public Usuario buscarPorId(int id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Usuario.class, id);
@@ -32,7 +48,12 @@ public class UsuarioDAO {
         }
     }
 
-    // Buscar un usuario por nombre de usuario
+    /**
+     * Busca un usuario por su nombre de usuario.
+     *
+     * @param nombreUsuario Nombre de usuario
+     * @return Usuario encontrado o null si no existe
+     */
     public Usuario buscarPorNombreUsuario(String nombreUsuario) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM Usuario WHERE usuario = :usuario", Usuario.class)
@@ -44,7 +65,11 @@ public class UsuarioDAO {
         }
     }
 
-    // Listar todos los usuarios
+    /**
+     * Lista todos los usuarios registrados.
+     *
+     * @return Lista de usuarios o null si ocurre un error
+     */
     public List<Usuario> listarTodos() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM Usuario", Usuario.class).list();
@@ -54,7 +79,11 @@ public class UsuarioDAO {
         }
     }
 
-    // Actualizar un usuario existente
+    /**
+     * Actualiza un usuario existente en la base de datos.
+     *
+     * @param usuario Usuario con los datos actualizados
+     */
     public void actualizarUsuario(Usuario usuario) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -67,7 +96,11 @@ public class UsuarioDAO {
         }
     }
 
-    // Eliminar un usuario
+    /**
+     * Elimina un usuario de la base de datos.
+     *
+     * @param usuario Usuario a eliminar
+     */
     public void eliminarUsuario(Usuario usuario) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
