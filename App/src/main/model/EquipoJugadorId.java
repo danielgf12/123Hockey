@@ -4,14 +4,30 @@ import javax.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * Clave primaria compuesta para la entidad EquipoJugador.
+ * Compuesta por el ID del equipo y el ID del usuario (jugador).
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 @Embeddable
 public class EquipoJugadorId implements Serializable {
 
     private int idEquipo;
     private int idUsuario;
 
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public EquipoJugadorId() {}
 
+    /**
+     * Constructor para inicializar la clave compuesta.
+     *
+     * @param idEquipo  ID del equipo
+     * @param idUsuario ID del jugador
+     */
     public EquipoJugadorId(int idEquipo, int idUsuario) {
         this.idEquipo = idEquipo;
         this.idUsuario = idUsuario;
