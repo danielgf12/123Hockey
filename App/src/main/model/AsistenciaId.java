@@ -6,18 +6,32 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Clave compuesta para Asistencia (entrenamiento + jugador).
+ * Clave primaria compuesta para la entidad Asistencia.
+ * Contiene el ID del entrenamiento y el ID del usuario (jugador).
+ * 
+ * @author Daniel García
+ * @version 1.0
  */
 @Embeddable
 public class AsistenciaId implements Serializable {
-    @Column(name="id_entrenamiento")
+
+    @Column(name = "id_entrenamiento")
     private int entrenamiento;
 
-    @Column(name="id_usuario")
+    @Column(name = "id_usuario")
     private int usuario;
 
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public AsistenciaId() {}
 
+    /**
+     * Constructor para inicializar la clave compuesta.
+     *
+     * @param entrenamiento ID del entrenamiento
+     * @param usuario       ID del usuario
+     */
     public AsistenciaId(int entrenamiento, int usuario) {
         this.entrenamiento = entrenamiento;
         this.usuario = usuario;
@@ -45,7 +59,7 @@ public class AsistenciaId implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         AsistenciaId that = (AsistenciaId) o;
         return entrenamiento == that.entrenamiento &&
-                usuario == that.usuario;
+               usuario == that.usuario;
     }
 
     @Override
