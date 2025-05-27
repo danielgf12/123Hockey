@@ -3,6 +3,14 @@ package main.model;
 import javax.persistence.*;
 import java.util.Date;
 
+/**
+ * Entidad que representa la información adicional de un jugador.
+ * Está vinculada uno a uno con un usuario y contiene datos como fecha de nacimiento,
+ * posición, asistencias, partidos jugados y una descripción personal.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 @Entity
 @Table(name = "jugador_info")
 public class JugadorInfo {
@@ -38,15 +46,31 @@ public class JugadorInfo {
 
     private String descripcion;
 
-    // Enum para posición
+    /**
+     * Enumeración que define si el jugador es portero o jugador de campo.
+     */
     public enum Posicion {
         PORTERO, JUGADOR
     }
 
-    // Constructor vacío
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public JugadorInfo() {}
 
-    // Constructor completo
+    /**
+     * Constructor completo para inicializar todos los campos del modelo.
+     *
+     * @param usuario               Usuario asociado
+     * @param fechaNacimiento       Fecha de nacimiento
+     * @param telefonoPadres        Teléfono de contacto de los padres (si aplica)
+     * @param posicion              Posición del jugador (PORTERO o JUGADOR)
+     * @param categoria             Categoría del jugador
+     * @param asistenciaObligatoria Número de asistencias obligatorias
+     * @param asistenciaVoluntaria  Número de asistencias voluntarias
+     * @param partidosJugados       Número de partidos jugados
+     * @param descripcion           Descripción adicional del jugador
+     */
     public JugadorInfo(Usuario usuario, Date fechaNacimiento, String telefonoPadres,
                        Posicion posicion, String categoria,
                        int asistenciaObligatoria, int asistenciaVoluntaria,
@@ -61,8 +85,6 @@ public class JugadorInfo {
         this.partidosJugados = partidosJugados;
         this.descripcion = descripcion;
     }
-
-    // Getters y Setters
 
     public int getId() { return id; }
 
