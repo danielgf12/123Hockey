@@ -3,6 +3,13 @@ package main.model;
 import javax.persistence.*;
 import java.util.Date;
 
+/**
+ * Entidad que representa un partido disputado por un equipo.
+ * Contiene información como rival, lugar, fecha, tipo y hora de quedada.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 @Entity
 @Table(name = "partido")
 public class Partido {
@@ -31,15 +38,29 @@ public class Partido {
     @Temporal(TemporalType.TIME)
     private Date horaQuedada;
 
-    // Enum para tipo de partido
+    /**
+     * Enumeración para los tipos de partido posibles.
+     */
     public enum TipoPartido {
         AMISTOSO, LIGA, TORNEO, CAMPEONATO
     }
 
-    // Constructor vacío
+    /**
+     * Constructor por defecto requerido por JPA.
+     */
     public Partido() {}
 
-    // Constructor completo
+    /**
+     * Constructor completo para inicializar todos los campos del partido.
+     *
+     * @param equipo       Equipo que juega el partido
+     * @param rival        Nombre del equipo rival
+     * @param lugar        Lugar donde se juega
+     * @param fecha        Fecha y hora del partido
+     * @param tipoPartido  Tipo de partido (AMISTOSO, LIGA, etc.)
+     * @param info         Información adicional del partido
+     * @param horaQuedada  Hora de quedada previa al partido
+     */
     public Partido(Equipo equipo, String rival, String lugar, Date fecha,
                    TipoPartido tipoPartido, String info, Date horaQuedada) {
         this.equipo = equipo;
@@ -50,8 +71,6 @@ public class Partido {
         this.info = info;
         this.horaQuedada = horaQuedada;
     }
-
-    // Getters y Setters
 
     public int getId() { return id; }
 
