@@ -17,6 +17,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Diálogo para crear un nuevo entrenamiento y guardarlo en la base de datos.
+ * Ofrece campos para seleccionar equipo, fecha, hora, ubicación, repetición, tipo y observaciones.
+ * Al guardar, ejecuta la acción de recarga proporcionada.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class CrearEntrenamientoVentana extends JDialog {
 
     private static final Color BG     = new Color(18, 18, 18);
@@ -42,15 +50,24 @@ public class CrearEntrenamientoVentana extends JDialog {
     private final SimpleDateFormat dfFecha = new SimpleDateFormat("d/MM/yyyy");
     private final SimpleDateFormat dfHora  = new SimpleDateFormat("HH:mm");
 
+    /**
+     * Construye el diálogo para crear un entrenamiento.
+     *
+     * @param parent ventana padre sobre la que se mostrará el diálogo
+     * @param usuarioLogado usuario actualmente autenticado
+     * @param onCreate acción a ejecutar tras guardar el entrenamiento (para recargar la vista)
+     */
     public CrearEntrenamientoVentana(Frame parent, Usuario usuarioLogado, Runnable onCreate) {
-        // modal=true para que bloquee la ventana padre
         super(parent, "Crear Entrenamiento", true);
         this.usuarioLogado = usuarioLogado;
         this.onCreate      = onCreate;
         initUI();
-        // ** NO ** pongas aquí setVisible(true);
     }
 
+    /**
+     * Inicializa la interfaz de usuario, creando el formulario de datos
+     * y los botones de guardar o cancelar.
+     */
     private void initUI() {
         Image appIcon = loadIcon("logoSinFondo.png",32,32).getImage();
         setIconImage(appIcon);
@@ -60,7 +77,6 @@ public class CrearEntrenamientoVentana extends JDialog {
         getContentPane().setBackground(BG);
         getContentPane().setLayout(new BorderLayout(10,10));
 
-        // --- Formulario ---
         JPanel form = new JPanel(new GridLayout(0,2,8,8));
         form.setBackground(BG);
         form.setBorder(BorderFactory.createTitledBorder(
@@ -71,7 +87,6 @@ public class CrearEntrenamientoVentana extends JDialog {
                 FG
         ));
 
-        // Equipo
         form.add(label("Equipo:"));
         List<Equipo> equipos = eqDao.listarTodos();
         cbEquipo = new JComboBox<>(equipos.toArray(new Equipo[0]));
@@ -86,32 +101,26 @@ public class CrearEntrenamientoVentana extends JDialog {
         });
         form.add(cbEquipo);
 
-        // Fecha
         form.add(label("Fecha (d/MM/yyyy):"));
         txtFecha = createField(dfFecha.format(new Date()));
         form.add(txtFecha);
 
-        // Hora
         form.add(label("Hora (HH:mm):"));
         txtHora = createField(dfHora.format(new Date()));
         form.add(txtHora);
 
-        // Ubicación
         form.add(label("Ubicación:"));
         txtUbicacion = createField("");
         form.add(txtUbicacion);
 
-        // Repetir
         form.add(label("Repetir:"));
         cbRepetir = new JComboBox<>(Entrenamiento.Repetir.values());
         form.add(cbRepetir);
 
-        // Tipo
         form.add(label("Tipo:"));
         cbTipo = new JComboBox<>(Entrenamiento.TipoEntrenamiento.values());
         form.add(cbTipo);
 
-        // Observaciones
         form.add(label("Observaciones:"));
         txtObservaciones = new JTextArea(3, 20);
         txtObservaciones.setLineWrap(true);
@@ -125,7 +134,6 @@ public class CrearEntrenamientoVentana extends JDialog {
 
         getContentPane().add(form, BorderLayout.CENTER);
 
-        // --- Botones ---
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT,12,12));
         footer.setBackground(BG);
 
@@ -150,6 +158,11 @@ public class CrearEntrenamientoVentana extends JDialog {
         getContentPane().add(footer, BorderLayout.SOUTH);
     }
 
+    /**
+     * Maneja la acción de guardar el nuevo entrenamiento.
+     * Extrae valores del formulario, valida formato de fecha y hora,
+     * crea el objeto Entrenamiento y lo persiste. Luego ejecuta onCreate.
+     */
     private void onSave() {
         Equipo eq      = (Equipo) cbEquipo.getSelectedItem();
         String sFecha  = txtFecha.getText().trim();
@@ -163,7 +176,6 @@ public class CrearEntrenamientoVentana extends JDialog {
         try {
             Date f = dfFecha.parse(sFecha);
             Date h = dfHora.parse(sHora);
-            // Combina fecha y hora
             fechaTime = new Date(
                     f.getYear(), f.getMonth(), f.getDate(),
                     h.getHours(), h.getMinutes()
@@ -185,12 +197,16 @@ public class CrearEntrenamientoVentana extends JDialog {
         ent.setObservaciones(obs);
 
         entDao.guardarEntrenamiento(ent);
-
-        // recarga la lista en CalendarioVentana
         onCreate.run();
         dispose();
     }
 
+    /**
+     * Crea un JLabel con texto y estilo por defecto.
+     *
+     * @param text texto a mostrar en la etiqueta
+     * @return JLabel configurado con color y fuente estándar
+     */
     private JLabel label(String text) {
         JLabel l = new JLabel(text);
         l.setForeground(FG);
@@ -198,6 +214,12 @@ public class CrearEntrenamientoVentana extends JDialog {
         return l;
     }
 
+    /**
+     * Crea un JTextField con texto inicial y estilo por defecto.
+     *
+     * @param text texto inicial a mostrar en el campo
+     * @return JTextField configurado con color de fondo, borde y fuente estándar
+     */
     private JTextField createField(String text) {
         JTextField f = new JTextField(text);
         f.setForeground(FG);
@@ -207,14 +229,19 @@ public class CrearEntrenamientoVentana extends JDialog {
         return f;
     }
 
+    /**
+     * Carga un icono desde recursos empaquetados y lo escala.
+     *
+     * @param name nombre del recurso dentro de assets (p. ej. "logoSinFondo.png")
+     * @param w ancho deseado del icono en píxeles
+     * @param h alto deseado del icono en píxeles
+     * @return ImageIcon escalado o un icono vacío si no se encuentra el recurso
+     */
     private ImageIcon loadIcon(String name, int w, int h){
-        URL u = getClass().getClassLoader()
-                .getResource("assets/"+name);
+        URL u = getClass().getClassLoader().getResource("assets/"+name);
         Image img = (u!=null)
                 ? new ImageIcon(u).getImage()
                 : new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
-        return new ImageIcon(img.getScaledInstance(
-                w,h,Image.SCALE_SMOOTH
-        ));
+        return new ImageIcon(img.getScaledInstance(w,h,Image.SCALE_SMOOTH));
     }
 }
