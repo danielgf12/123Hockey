@@ -134,11 +134,11 @@ public class InicioEntrenadorVentana extends JFrame {
         add(pE);
 
         JLabel tE = new JLabel("Próximos eventos", SwingConstants.CENTER);
-        tE.setFont(new Font("Segoe UI", Font.BOLD, (int)((panelH+100)*0.08)));
+        tE.setFont(new Font("Segoe UI", Font.BOLD, (int)((panelH+100) * 0.08)));
         tE.setForeground(Color.WHITE);
         int titleHt = tE.getPreferredSize().height;
-        int titleTop = (int)((panelH+100)*0.05);
-        tE.setBounds(innerMX, titleTop, panelW-2*innerMX, titleHt);
+        int titleTop = (int)((panelH+100) * 0.05);
+        tE.setBounds(innerMX(pE), titleTop, panelW - 2*innerMX(pE), titleHt);
         pE.add(tE);
 
         int iconE = (int)((panelH+100)*0.16);
@@ -166,24 +166,22 @@ public class InicioEntrenadorVentana extends JFrame {
         SimpleDateFormat dfH = new SimpleDateFormat("HH:mm");
 
         String textoPartido = proximoPartido!=null
-                ? "Próximo partido: " + dfF.format(proximoPartido.getFecha())
+                ? "     Próximo partido: " + dfF.format(proximoPartido.getFecha())
                 + " vs " + proximoPartido.getRival()
-                : "Próximo partido: -";
+                : "     Próximo partido: -";
 
         String textoEntreno = proximoEntreno!=null
-                ? "Próximo entrenamiento: " + dfF.format(proximoEntreno.getFecha())
+                ? "     Próximo entrenamiento: " + dfF.format(proximoEntreno.getFecha())
                 + " " + dfH.format(proximoEntreno.getFecha())
-                : "Próximo entrenamiento: -";
+                : "     Próximo entrenamiento: -";
 
         String[] textosE = { textoPartido, textoEntreno };
         String[] iconosE = { "hockey_icon.png", "board_icon.png" };
 
-        for(int i=0; i<rowsE; i++){
-            int y = titleBot + gapE*(i+1) + iconE*i;
-            addIconAndText(pE, iconosE[i], textosE[i],
-                    innerMX, y, iconE,
-                    panelW - innerMX - iconE - innerMX,
-                    panelH+100);
+        for (int i = 0; i < textosE.length; i++) {
+            int y = titleBot + gapE * (i + 1) + iconE * i;
+            addIconAndText(pE, iconosE[i], textosE[i], innerMX(pE), y, iconE,
+                    panelW - 2 * innerMX(pE) - iconE, panelH + 100);
         }
 
         JPanel pR = new JPanel(null) {
@@ -258,9 +256,9 @@ public class InicioEntrenadorVentana extends JFrame {
                 : 0;
 
         String[] textosR = {
-                "Equipos: " + numEquipos,
-                "Jugadores totales: " + numJugadores,
-                String.format("Media asistencia: %.1f %%", mediaAsistencia)
+                "    Equipos: " + numEquipos,
+                "    Jugadores totales: " + numJugadores,
+                String.format("    Media asistencia: %.1f %%", mediaAsistencia)
         };
         String[] iconosR = { "team_icon.png", "list_icon.png", "graph_icon.png" };
 
