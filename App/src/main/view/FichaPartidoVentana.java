@@ -19,6 +19,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Ventana que muestra la ficha detallada de un partido, permitiendo ver y editar
+ * sus datos básicos, gestionar alineación de jugadores y eliminar el partido si
+ * el usuario tiene los permisos adecuados.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class FichaPartidoVentana extends JFrame {
     private static final Color BG     = new Color(18,18,18);
     private static final Color FG     = Color.WHITE;
@@ -44,6 +52,12 @@ public class FichaPartidoVentana extends JFrame {
     private final SimpleDateFormat dfDateTime = new SimpleDateFormat("d/MM/yyyy HH:mm");
     private final SimpleDateFormat dfTime     = new SimpleDateFormat("HH:mm");
 
+    /**
+     * Construye la ventana de ficha de partido para el usuario y partido indicados.
+     *
+     * @param usuarioLogado usuario autenticado que accede a la ficha
+     * @param partido       partido cuyos datos se mostrarán
+     */
     public FichaPartidoVentana(Usuario usuarioLogado, Partido partido) {
         super("Ficha de Partido");
         this.usuarioLogado = usuarioLogado;
@@ -51,6 +65,10 @@ public class FichaPartidoVentana extends JFrame {
         initUI();
     }
 
+    /**
+     * Inicializa la interfaz de usuario: icono, tamaño, disposición de componentes
+     * para datos del partido, alineación de jugadores y botones de acción.
+     */
     private void initUI() {
         Image appIcon = loadIcon("logoSinFondo.png",32,32).getImage();
         setIconImage(appIcon);
@@ -61,7 +79,6 @@ public class FichaPartidoVentana extends JFrame {
         getContentPane().setBackground(BG);
         getContentPane().setLayout(new BorderLayout());
 
-        // — Header —
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(BG);
         header.setBorder(new EmptyBorder(10,20,10,20));
@@ -71,7 +88,6 @@ public class FichaPartidoVentana extends JFrame {
         header.add(lblTitle, BorderLayout.CENTER);
         getContentPane().add(header, BorderLayout.NORTH);
 
-        // — Center: formulario —
         JPanel center = new JPanel(new GridBagLayout());
         center.setBackground(BG);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -80,7 +96,6 @@ public class FichaPartidoVentana extends JFrame {
         gbc.fill    = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        // Equipo
         gbc.gridx=0; gbc.gridy=0;
         center.add(createLabel("Equipo:"), gbc);
         gbc.gridx=1;
@@ -94,7 +109,6 @@ public class FichaPartidoVentana extends JFrame {
                 return this;
             }
         });
-        // preseleccionar
         for (int i=0; i<equipos.size(); i++) {
             if (equipos.get(i).getId() == partido.getEquipo().getId()) {
                 cbEquipo.setSelectedIndex(i);
@@ -103,28 +117,24 @@ public class FichaPartidoVentana extends JFrame {
         }
         center.add(cbEquipo, gbc);
 
-        // Rival
         gbc.gridx=0; gbc.gridy=1;
         center.add(createLabel("Rival:"), gbc);
         gbc.gridx=1;
         txtRival = new JTextField(partido.getRival());
         center.add(txtRival, gbc);
 
-        // Lugar
         gbc.gridx=0; gbc.gridy=2;
         center.add(createLabel("Lugar:"), gbc);
         gbc.gridx=1;
         txtLugar = new JTextField(partido.getLugar());
         center.add(txtLugar, gbc);
 
-        // Fecha/Hora
         gbc.gridx=0; gbc.gridy=3;
         center.add(createLabel("Fecha / Hora:"), gbc);
         gbc.gridx=1;
         txtFechaHora = new JTextField(dfDateTime.format(partido.getFecha()));
         center.add(txtFechaHora, gbc);
 
-        // Hora de quedada
         gbc.gridx=0; gbc.gridy=4;
         center.add(createLabel("Hora de quedada:"), gbc);
         gbc.gridx=1;
@@ -135,7 +145,6 @@ public class FichaPartidoVentana extends JFrame {
         );
         center.add(txtHoraQuedada, gbc);
 
-        // Categoría
         gbc.gridx=0; gbc.gridy=5;
         center.add(createLabel("Categoría:"), gbc);
         gbc.gridx=1;
@@ -143,7 +152,6 @@ public class FichaPartidoVentana extends JFrame {
         cbTipo.setSelectedItem(partido.getTipoPartido());
         center.add(cbTipo, gbc);
 
-        // Info
         gbc.gridx=0; gbc.gridy=6; gbc.gridwidth=2;
         center.add(createLabel("Info de interés:"), gbc);
         gbc.gridy=7; gbc.fill=GridBagConstraints.BOTH; gbc.weighty=1.0;
@@ -159,7 +167,6 @@ public class FichaPartidoVentana extends JFrame {
 
         getContentPane().add(center, BorderLayout.CENTER);
 
-        // — East: alineación de jugadores —
         JPanel alineacion = new JPanel();
         alineacion.setBackground(BG);
         alineacion.setLayout(new BoxLayout(alineacion, BoxLayout.Y_AXIS));
@@ -182,7 +189,6 @@ public class FichaPartidoVentana extends JFrame {
         spAline.setBorder(null);
         getContentPane().add(spAline, BorderLayout.EAST);
 
-        // — Footer: editar / eliminar —
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT,12,12));
         footer.setBackground(BG);
 
@@ -210,17 +216,19 @@ public class FichaPartidoVentana extends JFrame {
 
         getContentPane().add(footer, BorderLayout.SOUTH);
 
-        // arranca en modo lectura
         setFieldsEditable(false);
         setVisible(true);
     }
 
+    /**
+     * Alterna entre modo edición y guardado de datos. Si se sale de edición,
+     * valida y persiste los cambios en el objeto Partido.
+     */
     private void toggleEditSave() {
         editing = !editing;
         setFieldsEditable(editing);
         btnEditSave.setText(editing ? "Guardar cambios" : "Editar datos");
         if (!editing) {
-            // guardar
             try {
                 Date dt = dfDateTime.parse(txtFechaHora.getText().trim());
                 partido.setFecha(dt);
@@ -230,15 +238,12 @@ public class FichaPartidoVentana extends JFrame {
                         "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // hora quedada
             try {
                 Date hq = dfTime.parse(txtHoraQuedada.getText().trim());
                 partido.setHoraQuedada(hq);
             } catch (ParseException ex) {
-                // si no es crítico, se ignora o mostrar mensaje
                 partido.setHoraQuedada(null);
             }
-            // resto de campos
             partido.setEquipo((Equipo)cbEquipo.getSelectedItem());
             partido.setRival(txtRival.getText().trim());
             partido.setLugar(txtLugar.getText().trim());
@@ -251,6 +256,11 @@ public class FichaPartidoVentana extends JFrame {
         }
     }
 
+    /**
+     * Habilita o deshabilita los campos de edición según el parámetro.
+     *
+     * @param e true para permitir edición, false para solo lectura
+     */
     private void setFieldsEditable(boolean e) {
         cbEquipo.setEnabled(e);
         txtRival.setEditable(e);
@@ -261,6 +271,12 @@ public class FichaPartidoVentana extends JFrame {
         txtInfo.setEditable(e);
     }
 
+    /**
+     * Crea un JLabel con estilo estándar para etiquetas.
+     *
+     * @param text texto a mostrar
+     * @return JLabel configurado con color y fuente
+     */
     private JLabel createLabel(String text) {
         JLabel l = new JLabel(text);
         l.setForeground(FG);
@@ -268,6 +284,11 @@ public class FichaPartidoVentana extends JFrame {
         return l;
     }
 
+    /**
+     * Aplica estilo coherente a un JButton.
+     *
+     * @param b botón a estilizar
+     */
     private void styleButton(JButton b) {
         b.setFont(new Font("Segoe UI", Font.BOLD, 14));
         b.setForeground(FG);
@@ -275,9 +296,17 @@ public class FichaPartidoVentana extends JFrame {
         b.setOpaque(true);
         b.setBorder(BorderFactory.createEmptyBorder(6,12,6,12));
     }
+
+    /**
+     * Carga un recurso de imagen y lo escala al tamaño dado.
+     *
+     * @param name nombre del recurso en assets
+     * @param w    ancho en píxeles
+     * @param h    alto en píxeles
+     * @return ImageIcon escalado o transparente si no existe
+     */
     private ImageIcon loadIcon(String name, int w, int h){
-        URL u = getClass().getClassLoader()
-                .getResource("assets/"+name);
+        URL u = getClass().getClassLoader().getResource("assets/"+name);
         Image img = (u!=null)
                 ? new ImageIcon(u).getImage()
                 : new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
