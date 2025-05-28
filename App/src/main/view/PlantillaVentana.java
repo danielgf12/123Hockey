@@ -1,9 +1,7 @@
 package main.view;
 
-import main.dao.JugadorInfoDAO;
-import main.dao.UsuarioDAO;
-import main.model.JugadorInfo;
-import main.model.Usuario;
+import main.dao.*;
+import main.model.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -19,24 +17,32 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Ventana que muestra la plantilla de usuarios, permitiendo buscar, filtrar,
+ * ordenar y acceder a las fichas de jugadores y miembros del cuerpo técnico.
+ * Incluye funcionalidades de búsqueda en tiempo real y menú emergente
+ * para filtrar por categoría y ordenar por diferentes criterios.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class PlantillaVentana extends JFrame {
 
-    // Variables de pantalla
     private int W, H, mX, headerH, sepY, btnY, btnW, btnH, gapX, panelY, panelGapX, panelW, panelH, innerMX;
-    // Datos y panel de filas
     private List<Usuario> todos;
     private JPanel inner;
     private JTextField txtBuscar;
     private Set<String> selectedCategories;
-    // Usuario logueado
     private Usuario usuarioLogado;
-
-    // —— Añadido para ordenar ——
     private boolean sortByCategory = false;
     private boolean sortByPosition = false;
     private JPopupMenu ordenarMenu;
-    // ——————————————————————
 
+    /**
+     * Construye e inicializa la ventana de plantilla para el usuario dado.
+     *
+     * @param usuario usuario logueado que visualiza la plantilla
+     */
     public PlantillaVentana(Usuario usuario) {
         super("123Hockey - Plantilla");
         this.usuarioLogado = usuario;
@@ -44,7 +50,6 @@ public class PlantillaVentana extends JFrame {
         Image appIcon = loadIcon("logoSinFondo.png", 32, 32).getImage();
         setIconImage(appIcon);
 
-        // --- Calculamos anchos/altos basados en pantalla ---
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         W = screen.width;
         H = screen.height;
@@ -61,13 +66,11 @@ public class PlantillaVentana extends JFrame {
         panelH = (int)(H * 0.30);
         innerMX = (int)(panelW * 0.08);
 
-        // --- Ventana principal ---
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         getContentPane().setBackground(new Color(18, 18, 18));
         setLayout(null);
 
-        // --- Botón “volver” ---
         JLabel back = new JLabel(loadIcon("arrow_back.png", headerH - 16, headerH - 16));
         back.setBounds(mX, mX+4, headerH - 16, headerH - 16);
         back.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -92,28 +95,23 @@ public class PlantillaVentana extends JFrame {
         });
         add(back);
 
-        // --- Título “123HOCKEY!” ---
         JLabel title = new JLabel("123HOCKEY!");
         title.setFont(new Font("Arial Black", Font.BOLD, headerH/2 + 4));
         title.setForeground(new Color(49,109,233));
         title.setBounds(mX + headerH, mX - 6, (int)(W*0.3), headerH);
         add(title);
 
-        // --- Separador bajo cabecera ---
         JSeparator sep = new JSeparator();
         sep.setForeground(new Color(49,109,233));
         sep.setBounds(mX, sepY, W - 2*mX, 2);
         add(sep);
 
-        // --- Avatar del usuario ---
         int avatarSize = headerH - 16;
         int avatarX    = W - mX - avatarSize;
-        ImageIcon avatarIcon = cargarAvatar(usuario, avatarSize, avatarSize);
-        JLabel avatar = new JLabel(avatarIcon);
+        JLabel avatar = new JLabel(cargarAvatar(usuario, avatarSize, avatarSize));
         avatar.setBounds(avatarX, mX, avatarSize, avatarSize);
         add(avatar);
 
-        // --- Saludo “Hola, <Nombre>” ---
         int greetW = avatarX - 2*mX + 30;
         JLabel hola = new JLabel("Hola, " + usuario.getNombre(), SwingConstants.RIGHT);
         hola.setFont(new Font("Segoe UI", Font.BOLD, headerH/2 - 2));
@@ -121,7 +119,6 @@ public class PlantillaVentana extends JFrame {
         hola.setBounds(mX, mX, greetW, avatarSize);
         add(hola);
 
-        // --- Título de sección ---
         JLabel lblPlantilla = new JLabel("Plantilla");
         lblPlantilla.setFont(new Font("Segoe UI", Font.BOLD, headerH));
         lblPlantilla.setForeground(Color.WHITE);
@@ -130,10 +127,6 @@ public class PlantillaVentana extends JFrame {
 
         int ctrlY = mX + headerH + 80;
         int ctrlH = (int)(headerH / 1.5);
-
-        // ---------------------------------------
-        // Campo de búsqueda con estilo login
-        // ---------------------------------------
         int arcField   = 15, bordField  = 1;
         Color fieldBg     = new Color(18, 18, 18);
         Color fieldBorder = new Color(49, 109, 233);
@@ -187,9 +180,6 @@ public class PlantillaVentana extends JFrame {
         });
         add(txtBuscar);
 
-        // ---------------------------------------
-        // Botones redondeados al estilo login
-        // ---------------------------------------
         int arcBtn        = ctrlH / 3, bordBtn = 1;
         Color normalBg     = new Color(18, 18, 18);
         Color normalBorder = new Color(49, 109, 233);
@@ -256,7 +246,6 @@ public class PlantillaVentana extends JFrame {
         btnOrdenar.setBounds(mX + (int)(W*0.3) + 140, ctrlY, 120, ctrlH);
         add(btnOrdenar);
 
-        // ——— Botón “Nuevo usuario” ———
         JButton btnNuevo = new JButton("Nuevo usuario") {
             @Override protected void paintComponent(Graphics g) {
                 int w = getWidth(), h = getHeight(), arc = arcBtn;
@@ -291,19 +280,16 @@ public class PlantillaVentana extends JFrame {
             );
             dialog.setVisible(true);
         });
-        // Solo ENTRENADOR o DELEGADO ven este botón:
         if (usuarioLogado.getRol() == Usuario.Rol.ENTRENADOR
                 || usuarioLogado.getRol() == Usuario.Rol.DELEGADO) {
             add(btnNuevo);
         }
 
-        // --- Datos y panel interno ---
         todos = new UsuarioDAO().listarTodos();
         inner = new JPanel();
         inner.setLayout(new BoxLayout(inner, BoxLayout.Y_AXIS));
         inner.setBackground(new Color(18,18,18));
 
-        // --- Menú emergente de categorías ---
         List<String> categories = new JugadorInfoDAO().listarTodos().stream()
                 .map(JugadorInfo::getCategoria)
                 .filter(c -> c != null && !c.isEmpty())
@@ -311,7 +297,7 @@ public class PlantillaVentana extends JFrame {
                 .collect(Collectors.toList());
         categories.add("Otros");
         selectedCategories = new HashSet<>(categories);
-        final JPopupMenu categoryMenu = new JPopupMenu();
+        JPopupMenu categoryMenu = new JPopupMenu();
         for (String cat : categories) {
             JCheckBoxMenuItem item = new JCheckBoxMenuItem(cat, true);
             categoryMenu.add(item);
@@ -327,7 +313,6 @@ public class PlantillaVentana extends JFrame {
             }
         });
 
-        // —— Añadido: menú emergente para “Ordenar” ——
         ordenarMenu = new JPopupMenu();
         JCheckBoxMenuItem orderCat = new JCheckBoxMenuItem("Ordenar por categoría", sortByCategory);
         JCheckBoxMenuItem orderPos = new JCheckBoxMenuItem("Ordenar por posición", sortByPosition);
@@ -344,23 +329,19 @@ public class PlantillaVentana extends JFrame {
         btnOrdenar.addActionListener(e ->
                 ordenarMenu.show(btnOrdenar, 0, btnOrdenar.getHeight())
         );
-        // ————————————————————————————————
 
-        // --- Búsqueda en tiempo real ---
         txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e)  { filtrar(txtBuscar.getText()); }
             public void removeUpdate(DocumentEvent e)  { filtrar(txtBuscar.getText()); }
             public void changedUpdate(DocumentEvent e) { filtrar(txtBuscar.getText()); }
         });
 
-        // --- Scrollpane que ocupa el resto de la pantalla ---
         JScrollPane scroll = new JScrollPane(inner);
         scroll.setBounds(mX, mX + headerH + 120, W, H - (mX + headerH + 200));
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         scroll.setBorder(null);
         add(scroll);
 
-        // --- Poblado inicial sin filtro ---
         filtrar("");
 
         revalidate();
@@ -368,14 +349,16 @@ public class PlantillaVentana extends JFrame {
         setVisible(true);
     }
 
-    /** Realiza el filtrado de la lista según el texto y las categorías y orden **/
+    /**
+     * Filtra la lista de usuarios según el texto de búsqueda,
+     * las categorías seleccionadas y las opciones de orden.
+     *
+     * @param texto texto ingresado para buscar usuarios por nombre
+     */
     private void filtrar(String texto) {
         if ("Buscar por nombre…".equals(texto)) texto = "";
         String t = texto == null ? "" : texto.toLowerCase().trim();
-
         inner.removeAll();
-
-        // Jugadores con filtro de nombre + categoría
         inner.add(createSectionHeader("Jugadores"));
         List<Usuario> jugadores = todos.stream()
                 .filter(u -> u.getRol() == Usuario.Rol.JUGADOR)
@@ -383,13 +366,10 @@ public class PlantillaVentana extends JFrame {
                 .filter(u -> {
                     JugadorInfo info = new JugadorInfoDAO().buscarPorUsuarioId(u.getId());
                     String cat = (info != null && info.getCategoria() != null && !info.getCategoria().isEmpty())
-                            ? info.getCategoria()
-                            : "Otros";
+                            ? info.getCategoria() : "Otros";
                     return selectedCategories.contains(cat);
                 })
                 .collect(Collectors.toList());
-
-        // aplicar orden si está seleccionado
         if (sortByCategory || sortByPosition) {
             Comparator<Usuario> comp = (u1, u2) -> 0;
             if (sortByCategory) {
@@ -409,19 +389,21 @@ public class PlantillaVentana extends JFrame {
             jugadores.sort(comp);
         }
         jugadores.forEach(u -> inner.add(createRow(u)));
-
-        // Cuerpo técnico (delegados + entrenadores)
         inner.add(createSectionHeader("Cuerpo técnico"));
         todos.stream()
                 .filter(u -> u.getRol() == Usuario.Rol.DELEGADO || u.getRol() == Usuario.Rol.ENTRENADOR)
                 .filter(u -> (u.getNombre() + " " + u.getApellidos()).toLowerCase().contains(t))
                 .forEach(u -> inner.add(createRow(u)));
-
         inner.revalidate();
         inner.repaint();
     }
 
-    /** Cabecera de sección (“Jugadores”, “Cuerpo técnico”) **/
+    /**
+     * Crea un panel que actúa como cabecera de sección con el texto dado.
+     *
+     * @param texto texto de la sección (por ejemplo "Jugadores")
+     * @return panel configurado como cabecera
+     */
     private JPanel createSectionHeader(String texto) {
         JLabel lbl = new JLabel(texto);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 24));
@@ -433,28 +415,30 @@ public class PlantillaVentana extends JFrame {
         return p;
     }
 
-    /** Fila para cada usuario (Jugador o Delegado/Entrenador) **/
-    private JPanel createRow(Usuario u){
+    /**
+     * Crea una fila que representa a un usuario en la plantilla.
+     * Incluye avatar, nombre, categoría/rol y enlace a su ficha.
+     *
+     * @param u usuario a representar
+     * @return panel con los componentes de la fila
+     */
+    private JPanel createRow(Usuario u) {
         int rowH = 80;
         JPanel p = new JPanel(null);
         p.setPreferredSize(new Dimension(0, rowH));
         p.setBackground(new Color(18,18,18));
 
-        // Avatar
         int iconSize = rowH - 20;
-        ImageIcon av = cargarAvatar(u, iconSize, iconSize);
-        JLabel lblIcon = new JLabel(av);
+        JLabel lblIcon = new JLabel(cargarAvatar(u, iconSize, iconSize));
         lblIcon.setBounds(10,10,iconSize,iconSize);
         p.add(lblIcon);
 
-        // Nombre completo
         JLabel lblNombre = new JLabel(u.getNombre() + " " + u.getApellidos());
         lblNombre.setForeground(Color.WHITE);
         lblNombre.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         lblNombre.setBounds(30 + iconSize, 0, 300, rowH);
         p.add(lblNombre);
 
-        // Categoría o Teléfono
         JLabel lblCat = new JLabel();
         lblCat.setForeground(Color.WHITE);
         lblCat.setFont(new Font("Segoe UI", Font.PLAIN, 18));
@@ -467,7 +451,6 @@ public class PlantillaVentana extends JFrame {
         }
         p.add(lblCat);
 
-        // Posición o Rol (Delegado/Entrenador)
         JLabel lblTipo = new JLabel();
         lblTipo.setForeground(Color.WHITE);
         lblTipo.setFont(new Font("Segoe UI", Font.PLAIN, 18));
@@ -481,7 +464,6 @@ public class PlantillaVentana extends JFrame {
         }
         p.add(lblTipo);
 
-        // “Ver ficha...” clicable según permisos
         boolean canView = usuarioLogado.getRol() != Usuario.Rol.JUGADOR
                 || usuarioLogado.getId() == u.getId();
         if (canView) {
@@ -500,7 +482,14 @@ public class PlantillaVentana extends JFrame {
         return p;
     }
 
-    /** Carga avatar desde BBDD o recurso por defecto **/
+    /**
+     * Carga el avatar de un usuario desde la base de datos o usa un icono por defecto.
+     *
+     * @param u usuario
+     * @param w ancho deseado
+     * @param h alto deseado
+     * @return ImageIcon del avatar circular
+     */
     private ImageIcon cargarAvatar(Usuario u, int w, int h) {
         try {
             byte[] f = u.getFotoUsuario();
@@ -519,10 +508,17 @@ public class PlantillaVentana extends JFrame {
         return loadIcon("user_default.png",w,h);
     }
 
-    /** Carga iconos desde /assets **/
-    private ImageIcon loadIcon(String name,int w,int h){
+    /**
+     * Carga y escala un icono desde la carpeta assets o src/assets.
+     *
+     * @param name nombre del archivo de icono
+     * @param w    ancho deseado
+     * @param h    alto deseado
+     * @return ImageIcon escalado
+     */
+    private ImageIcon loadIcon(String name, int w, int h) {
         URL u = getClass().getClassLoader().getResource("assets/"+name);
-        Image img = (u!=null)
+        Image img = (u != null)
                 ? new ImageIcon(u).getImage()
                 : new ImageIcon("src/assets/" + name).getImage();
         return new ImageIcon(img.getScaledInstance(w,h,Image.SCALE_SMOOTH));
