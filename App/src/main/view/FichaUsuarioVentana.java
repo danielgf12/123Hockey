@@ -22,6 +22,14 @@ import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * Ventana que muestra la ficha de un usuario, permitiendo ver y editar sus datos personales,
+ * información de jugador y credenciales, así como cambiar la contraseña y eliminar al usuario
+ * si el rol del usuario logueado lo permite.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class FichaUsuarioVentana extends JFrame {
 
     private static final Color BG     = new Color(18,18,18);
@@ -41,6 +49,12 @@ public class FichaUsuarioVentana extends JFrame {
     private JButton           btnChangePass, btnEditSave, btnDelete;
     private boolean           editing = false;
 
+    /**
+     * Crea e inicializa la ventana de ficha de usuario.
+     *
+     * @param loggedUser usuario autenticado que abre la ventana
+     * @param targetUser usuario cuya ficha se mostrará
+     */
     public FichaUsuarioVentana(Usuario loggedUser, Usuario targetUser) {
         super("Ficha de " + targetUser.getNombre() + " " + targetUser.getApellidos());
         this.loggedUser = loggedUser;
@@ -56,7 +70,15 @@ public class FichaUsuarioVentana extends JFrame {
         getContentPane().setBackground(BG);
         getContentPane().setLayout(new BorderLayout());
 
-        // Header: avatar + name
+        initUI();
+    }
+
+    /**
+     * Inicializa y dispone los componentes gráficos de la ventana:
+     * encabezado con avatar y nombre, panel central con datos básicos,
+     * descripción, panel de acceso y pie con botones de acción.
+     */
+    private void initUI() {
         lblFoto = new JLabel(cargarAvatarCircular(targetUser,120,120));
         lblFoto.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblFoto.addMouseListener(new MouseAdapter() {
@@ -98,7 +120,6 @@ public class FichaUsuarioVentana extends JFrame {
         header.add(lblNombre);
         getContentPane().add(header, BorderLayout.NORTH);
 
-        // Center panel
         JPanel content = new JPanel(new GridBagLayout());
         content.setBackground(BG);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -107,7 +128,6 @@ public class FichaUsuarioVentana extends JFrame {
         gbc.fill    = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        // Datos básicos panel
         JPanel datosPanel = new JPanel(new GridBagLayout());
         datosPanel.setBackground(BG);
         datosPanel.setBorder(BorderFactory.createTitledBorder(
@@ -122,7 +142,6 @@ public class FichaUsuarioVentana extends JFrame {
         dgbc.fill    = GridBagConstraints.HORIZONTAL;
         dgbc.weightx = 1.0;
 
-        // Categoría
         dgbc.gridx=0; dgbc.gridy=0;
         datosPanel.add(createLabel("Categoría:"), dgbc);
         cbCategoria = new JComboBox<>(new String[]{
@@ -133,25 +152,21 @@ public class FichaUsuarioVentana extends JFrame {
         cbCategoria.setEnabled(false);
         dgbc.gridx=1; datosPanel.add(cbCategoria, dgbc);
 
-        // Nacimiento
         dgbc.gridx=2;
         datosPanel.add(createLabel("Nacimiento:"), dgbc);
         txtNacimiento = createField(formatearFecha(info!=null?info.getFechaNacimiento():null));
         dgbc.gridx=3; datosPanel.add(txtNacimiento, dgbc);
 
-        // Teléfono
         dgbc.gridy=1; dgbc.gridx=0;
         datosPanel.add(createLabel("Teléfono:"), dgbc);
         txtTelefono = createField(targetUser.getTelefono());
         dgbc.gridx=1; datosPanel.add(txtTelefono, dgbc);
 
-        // Teléfonos padres
         dgbc.gridx=2;
         datosPanel.add(createLabel("Teléfono padres:"), dgbc);
         txtTelefonoPadre = createField(info!=null?info.getTelefonoPadres():null);
         dgbc.gridx=3; datosPanel.add(txtTelefonoPadre, dgbc);
 
-        // Rol
         dgbc.gridy=2; dgbc.gridx=0;
         datosPanel.add(createLabel("Rol:"), dgbc);
         cbRol = new JComboBox<>(Usuario.Rol.values());
@@ -159,7 +174,6 @@ public class FichaUsuarioVentana extends JFrame {
         cbRol.setEnabled(false);
         dgbc.gridx=1; datosPanel.add(cbRol, dgbc);
 
-        // Posición
         dgbc.gridx=2;
         datosPanel.add(createLabel("Posición:"), dgbc);
         cbPosicion = new JComboBox<>(JugadorInfo.Posicion.values());
@@ -169,7 +183,6 @@ public class FichaUsuarioVentana extends JFrame {
         cbPosicion.setEnabled(false);
         dgbc.gridx=3; datosPanel.add(cbPosicion, dgbc);
 
-        // Asistencia obligatoria
         dgbc.gridy=3; dgbc.gridx=0;
         datosPanel.add(createLabel("Asist. obligatoria:"), dgbc);
         JTextField txtAsistOblig = createField(
@@ -178,7 +191,6 @@ public class FichaUsuarioVentana extends JFrame {
         txtAsistOblig.setEditable(false);
         dgbc.gridx=1; datosPanel.add(txtAsistOblig, dgbc);
 
-        // Partidos jugados
         dgbc.gridx=2;
         datosPanel.add(createLabel("Partidos jugados:"), dgbc);
         JTextField txtPartidos = createField(
@@ -192,7 +204,6 @@ public class FichaUsuarioVentana extends JFrame {
 
         int nextRow = 1;
 
-        // Descripción / notas (sólo ENTRENADOR o DELEGADO)
         if (loggedUser.getRol() != Usuario.Rol.JUGADOR) {
             gbc.gridy=nextRow; gbc.gridwidth=2;
             JLabel lblDesc = new JLabel("Descripción / notas:");
@@ -220,7 +231,6 @@ public class FichaUsuarioVentana extends JFrame {
             nextRow++;
         }
 
-        // Acceso
         gbc.gridy=nextRow;
         gbc.weighty=0;
         gbc.fill=GridBagConstraints.HORIZONTAL;
@@ -258,13 +268,11 @@ public class FichaUsuarioVentana extends JFrame {
         gbc.gridwidth=2;
         content.add(accPanel, gbc);
 
-        // Scroll central
         JScrollPane centerScroll = new JScrollPane(content);
         centerScroll.setBorder(null);
         centerScroll.getViewport().setBackground(BG);
         getContentPane().add(centerScroll, BorderLayout.CENTER);
 
-        // Footer: botones
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT,12,12));
         footer.setBackground(BG);
         boolean canEdit = loggedUser.getRol()==Usuario.Rol.DELEGADO
@@ -291,6 +299,10 @@ public class FichaUsuarioVentana extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Alterna entre modo edición y guardado de datos. Si se desactiva edición,
+     * persiste los cambios en la base de datos para usuario e información de jugador.
+     */
     private void toggleEdit() {
         editing = !editing;
         setFieldsEditable(editing);
@@ -313,6 +325,11 @@ public class FichaUsuarioVentana extends JFrame {
         }
     }
 
+    /**
+     * Habilita o deshabilita los campos del formulario según el parámetro.
+     *
+     * @param e true para permitir edición, false para solo lectura
+     */
     private void setFieldsEditable(boolean e) {
         cbCategoria.setEnabled(e);
         txtNacimiento.setEditable(e);
@@ -326,6 +343,10 @@ public class FichaUsuarioVentana extends JFrame {
         }
     }
 
+    /**
+     * Abre un diálogo para cambiar la contraseña del usuario si se ingresan
+     * dos contraseñas coincidentes y no vacías, y persiste el cambio.
+     */
     private void openChangePasswordDialog() {
         JPasswordField pass1 = new JPasswordField(15);
         JPasswordField pass2 = new JPasswordField(15);
@@ -351,6 +372,12 @@ public class FichaUsuarioVentana extends JFrame {
         }
     }
 
+    /**
+     * Crea un JLabel con estilo predeterminado.
+     *
+     * @param text texto a mostrar
+     * @return JLabel configurado con color y fuente estándar
+     */
     private JLabel createLabel(String text) {
         JLabel l = new JLabel(text);
         l.setForeground(FG);
@@ -358,6 +385,12 @@ public class FichaUsuarioVentana extends JFrame {
         return l;
     }
 
+    /**
+     * Crea un JTextField con estilo predeterminado.
+     *
+     * @param text texto inicial
+     * @return JTextField configurado
+     */
     private JTextField createField(String text) {
         JTextField f = new JTextField(text);
         f.setForeground(FG);
@@ -367,11 +400,23 @@ public class FichaUsuarioVentana extends JFrame {
         return f;
     }
 
+    /**
+     * Formatea una fecha a d/MM/yyyy o devuelve "–" si es null.
+     *
+     * @param d fecha a formatear
+     * @return cadena formateada o "–"
+     */
     private String formatearFecha(Date d) {
         if (d==null) return "–";
         return new SimpleDateFormat("d/MM/yyyy").format(d);
     }
 
+    /**
+     * Parsea una cadena con formato d/MM/yyyy a Date, o null si falla el parseo.
+     *
+     * @param s cadena a parsear
+     * @return objeto Date o null
+     */
     private Date parseFecha(String s) {
         try {
             return new SimpleDateFormat("d/MM/yyyy").parse(s);
@@ -380,6 +425,14 @@ public class FichaUsuarioVentana extends JFrame {
         }
     }
 
+    /**
+     * Carga y recorta circularmente el avatar de un usuario.
+     *
+     * @param u usuario cuyo avatar mostrar
+     * @param w ancho deseado en píxeles
+     * @param h alto deseado en píxeles
+     * @return ImageIcon circular o icono por defecto
+     */
     private ImageIcon cargarAvatarCircular(Usuario u,int w,int h) {
         try {
             byte[] f = u.getFotoUsuario();
@@ -398,6 +451,14 @@ public class FichaUsuarioVentana extends JFrame {
         return loadIcon("user_default.png",w,h);
     }
 
+    /**
+     * Carga un icono desde recursos empaquetados y lo escala al tamaño indicado.
+     *
+     * @param name nombre del recurso en assets
+     * @param w    ancho deseado en píxeles
+     * @param h    alto deseado en píxeles
+     * @return ImageIcon escalado o transparente si no existe recurso
+     */
     private ImageIcon loadIcon(String name,int w,int h) {
         URL u = getClass().getClassLoader().getResource("assets/"+name);
         Image img = (u!=null
