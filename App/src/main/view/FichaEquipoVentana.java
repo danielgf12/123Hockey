@@ -1,12 +1,7 @@
 package main.view;
 
-import main.dao.EquipoDAO;
-import main.dao.EquipoJugadorDAO;
-import main.dao.JugadorInfoDAO;
-import main.model.Equipo;
-import main.model.EquipoJugador;
-import main.model.JugadorInfo;
-import main.model.Usuario;
+import main.dao.*;
+import main.model.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -27,7 +22,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.List;
-// JasperReports
 import main.util.HibernateUtil;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperReport;
@@ -37,7 +31,14 @@ import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.swing.JRViewer;
 import net.sf.jasperreports.view.JasperViewer;
 
-
+/**
+ * Diálogo que muestra la ficha de un equipo, permitiendo ver y editar sus datos,
+ * gestionar jugadores disponibles y convocados, generar informe de asistencia y
+ * eliminar el equipo si el usuario es entrenador.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class FichaEquipoVentana extends JDialog {
     private static final Color BG     = new Color(18,18,18);
     private static final Color FG     = Color.WHITE;
@@ -49,16 +50,21 @@ public class FichaEquipoVentana extends JDialog {
     private final EquipoJugadorDAO ejDao  = new EquipoJugadorDAO();
     private final JugadorInfoDAO jiDao    = new JugadorInfoDAO();
 
-    // campos para edición inline
     private boolean editing = false;
     private JButton btnEditSave;
     private JTextField txtNombre, txtLiga, txtClub, txtCiudad, txtPais;
     private JComboBox<String> cbCategoria;
-    private JLabel lblNombre; // para actualizar al guardar
+    private JLabel lblNombre;
 
     private final JPanel disponiblesPanel = new JPanel();
     private final JPanel convocadosPanel  = new JPanel();
 
+    /**
+     * Construye el diálogo de ficha de equipo para el usuario dado y lo inicializa.
+     *
+     * @param usuarioLogado usuario autenticado que abre la ficha
+     * @param equipo        equipo cuyas datos se mostrarán
+     */
     public FichaEquipoVentana(Usuario usuarioLogado, Equipo equipo) {
         super((Frame)null, "Ficha de equipo", true);
         this.usuarioLogado = usuarioLogado;
@@ -67,13 +73,16 @@ public class FichaEquipoVentana extends JDialog {
         initUI();
     }
 
+    /**
+     * Inicializa la interfaz de usuario: layout, componentes de datos, listas
+     * de jugadores y botones de acción.
+     */
     private void initUI() {
         setSize(900, 650);
         setLocationRelativeTo(null);
         getContentPane().setBackground(BG);
         getContentPane().setLayout(new BorderLayout(10,10));
 
-        // --- Header con nombre y foto ---
         lblNombre = new JLabel(equipo.getNombre());
         lblNombre.setForeground(FG);
         lblNombre.setFont(new Font("Segoe UI", Font.BOLD, 28));
@@ -112,11 +121,9 @@ public class FichaEquipoVentana extends JDialog {
         header.add(lblFoto);
         getContentPane().add(header, BorderLayout.NORTH);
 
-        // --- Panel central con datos del equipo arriba ---
         JPanel mainPanel = new JPanel(new BorderLayout(0,10));
         mainPanel.setBackground(BG);
 
-        // DATOS INLINE: sustituimos JLabels por campos deshabilitados
         JPanel info = new JPanel(new GridLayout(0,2,8,8));
         info.setBackground(BG);
         info.setBorder(BorderFactory.createTitledBorder(
@@ -124,19 +131,16 @@ public class FichaEquipoVentana extends JDialog {
                 "Datos del equipo", TitledBorder.LEFT, TitledBorder.TOP,
                 new Font("Segoe UI", Font.BOLD, 16), FG
         ));
-        // Nombre
         info.add(createLabel("Nombre:"));
         txtNombre = createField(equipo.getNombre());
         txtNombre.setEditable(false);
         info.add(txtNombre);
 
-        // Liga
         info.add(createLabel("Liga:"));
         txtLiga = createField(equipo.getLiga());
         txtLiga.setEditable(false);
         info.add(txtLiga);
 
-        // Categoría
         info.add(createLabel("Categoría:"));
         cbCategoria = new JComboBox<>(new String[]{
                 "Prebenjamin","Benjamin","Alevin",
@@ -146,19 +150,16 @@ public class FichaEquipoVentana extends JDialog {
         cbCategoria.setEnabled(false);
         info.add(cbCategoria);
 
-        // Club
         info.add(createLabel("Club:"));
         txtClub = createField(equipo.getClub());
         txtClub.setEditable(false);
         info.add(txtClub);
 
-        // Ciudad
         info.add(createLabel("Ciudad:"));
         txtCiudad = createField(equipo.getCiudad());
         txtCiudad.setEditable(false);
         info.add(txtCiudad);
 
-        // País
         info.add(createLabel("País:"));
         txtPais = createField(equipo.getPais());
         txtPais.setEditable(false);
@@ -166,7 +167,6 @@ public class FichaEquipoVentana extends JDialog {
 
         mainPanel.add(info, BorderLayout.NORTH);
 
-        // Listas: disponibles y convocados (igual que antes)
         JPanel lists = new JPanel(new GridLayout(1,2,10,0));
         lists.setBackground(BG);
 
@@ -181,7 +181,6 @@ public class FichaEquipoVentana extends JDialog {
         mainPanel.add(lists, BorderLayout.CENTER);
         getContentPane().add(mainPanel, BorderLayout.CENTER);
 
-        // --- Pie: botones ---
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT,12,12));
         footer.setBackground(BG);
 
@@ -190,12 +189,10 @@ public class FichaEquipoVentana extends JDialog {
             btnEditSave = new JButton("Editar datos");
             btnEditSave.addActionListener(e -> toggleEdit());
             footer.add(btnEditSave);
-            // ——— Botón “Ver informe” ———————————
+
             JButton btnInforme = new JButton("Ver informe");
             btnInforme.addActionListener(e -> generarInforme());
             footer.add(btnInforme);
-// —————————————————————————————————————
-
 
             JButton btnEliminar = new JButton("Eliminar equipo");
             btnEliminar.addActionListener(e -> {
@@ -203,7 +200,6 @@ public class FichaEquipoVentana extends JDialog {
                         "¿Eliminar equipo \""+equipo.getNombre()+"\"?",
                         "Confirmar", JOptionPane.YES_NO_OPTION);
                 if (r == JOptionPane.YES_OPTION) {
-                    // borra todas las relaciones antes
                     List<EquipoJugador> rels = ejDao.listarPorEquipo(equipo.getId());
                     for (EquipoJugador rel : rels) {
                         ejDao.eliminar(rel);
@@ -225,20 +221,11 @@ public class FichaEquipoVentana extends JDialog {
     }
 
     /**
-     * Carga y rellena AsistenciaPorEquipo.jasper desde /assets,
-     * pidiendo al usuario FechaDesde y FechaHasta por diálogo.
-     */
-    /**
-     * Lanza AsistenciaPorEquipo.jasper (precompilado) pidiendo FechaDesde/FechaHasta
-     * y rellenándolo con la conexión JDBC que usa Hibernate.
-     */
-    /**
-     * Carga AsistenciaPorEquipo.jasper, pide FechaDesde/FechaHasta manualmente,
-     * y lo rellena pasando los tres parámetros requeridos.
+     * Genera y muestra el informe Jasper de asistencia por equipo,
+     * solicitando al usuario un rango de fechas.
      */
     private void generarInforme() {
         try {
-            // 1) cargar .jasper desde /assets
             InputStream input = getClass().getResourceAsStream("/assets/AsistenciaPorEquipo.jasper");
             if (input == null) {
                 JOptionPane.showMessageDialog(this,
@@ -246,20 +233,12 @@ public class FichaEquipoVentana extends JDialog {
                         "Error de Ruta", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
-            // 2) registrar el driver MySQL
             Class.forName("com.mysql.cj.jdbc.Driver");
-
-            // 3) abrir conexión JDBC
             Connection conexion = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/123Hockey",
-                    "root", ""
+                    "jdbc:mysql://localhost:3306/123Hockey", "root", ""
             );
-
-            // 4) compilar/deserializar el informe
             JasperReport reporte = (JasperReport) JRLoader.loadObject(input);
 
-            // 5) solicitar rango de fechas
             JSpinner spDesde = new JSpinner(new SpinnerDateModel());
             JSpinner spHasta = new JSpinner(new SpinnerDateModel());
             spDesde.setEditor(new JSpinner.DateEditor(spDesde, "yyyy-MM-dd"));
@@ -273,27 +252,18 @@ public class FichaEquipoVentana extends JDialog {
             }
             Date dDesde = (Date) spDesde.getValue();
             Date dHasta = (Date) spHasta.getValue();
-            // convertimos a Timestamp porque el parámetro lo espera
             Timestamp tsDesde = new Timestamp(dDesde.getTime());
             Timestamp tsHasta = new Timestamp(dHasta.getTime());
 
-            // 6) preparar parámetros
             Map<String,Object> parametros = new HashMap<>();
-            parametros.put("Equipo",      equipo.getId());
-            parametros.put("FechaDesde",  tsDesde);
-            parametros.put("FechaHasta",  tsHasta);
+            parametros.put("Equipo", equipo.getId());
+            parametros.put("FechaDesde", tsDesde);
+            parametros.put("FechaHasta", tsHasta);
 
-            // 7) llenar el informe
-            JasperPrint jasperPrint = JasperFillManager.fillReport(
-                    reporte, parametros, conexion
-            );
+            JasperPrint jasperPrint = JasperFillManager.fillReport(reporte, parametros, conexion);
             dispose();
-            // 8) mostrarlo
             JasperViewer.viewReport(jasperPrint, false);
-
-            // 9) cerrar conexión
             conexion.close();
-
         } catch (ClassNotFoundException | SQLException | JRException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this,
@@ -302,21 +272,20 @@ public class FichaEquipoVentana extends JDialog {
         }
     }
 
-
+    /**
+     * Alterna entre modo edición y guardado de datos del equipo.
+     * Si se sale de edición, persiste los cambios.
+     */
     private void toggleEdit() {
         editing = !editing;
-        // habilita/deshabilita edición
         txtNombre.setEditable(editing);
         txtLiga.setEditable(editing);
         txtClub.setEditable(editing);
         txtCiudad.setEditable(editing);
         txtPais.setEditable(editing);
         cbCategoria.setEnabled(editing);
-
         btnEditSave.setText(editing ? "Guardar cambios" : "Editar datos");
-
         if (!editing) {
-            // al guardar, vuelca valores y persiste
             equipo.setNombre(txtNombre.getText().trim());
             equipo.setLiga(txtLiga.getText().trim());
             equipo.setClub(txtClub.getText().trim());
@@ -334,6 +303,9 @@ public class FichaEquipoVentana extends JDialog {
         }
     }
 
+    /**
+     * Carga los jugadores disponibles y convocados al equipo en sus paneles.
+     */
     private void cargarDatos() {
         disponiblesPanel.removeAll();
         convocadosPanel.removeAll();
@@ -365,6 +337,13 @@ public class FichaEquipoVentana extends JDialog {
         convocadosPanel.revalidate();
     }
 
+    /**
+     * Crea la fila de un jugador con avatar, nombre, categoría y casilla para convocar.
+     *
+     * @param u       usuario jugador
+     * @param checked true si el jugador está convocado
+     * @return panel representando al jugador
+     */
     private JPanel createJugadorRow(Usuario u, boolean checked) {
         JPanel p = new JPanel(null);
         p.setPreferredSize(new Dimension(0,50));
@@ -404,6 +383,14 @@ public class FichaEquipoVentana extends JDialog {
         return p;
     }
 
+    /**
+     * Envuelve un panel en un JScrollPane con un título dado.
+     *
+     * @param title      título del borde
+     * @param innerPanel panel a envolver
+     * @param height     altura preferida del scroll
+     * @return panel contenedor con scroll y título
+     */
     private JPanel wrapInScroll(String title, JPanel innerPanel, int height) {
         JPanel cont = new JPanel(new BorderLayout());
         cont.setBackground(BG);
@@ -420,6 +407,12 @@ public class FichaEquipoVentana extends JDialog {
         return cont;
     }
 
+    /**
+     * Crea un JLabel con estilo estándar.
+     *
+     * @param text texto a mostrar
+     * @return JLabel configurado
+     */
     private JLabel createLabel(String text) {
         JLabel l = new JLabel(text);
         l.setForeground(FG);
@@ -427,6 +420,12 @@ public class FichaEquipoVentana extends JDialog {
         return l;
     }
 
+    /**
+     * Crea un JTextField con estilo estándar.
+     *
+     * @param text texto inicial
+     * @return JTextField configurado
+     */
     private JTextField createField(String text) {
         JTextField f = new JTextField(text);
         f.setForeground(FG);
@@ -436,11 +435,24 @@ public class FichaEquipoVentana extends JDialog {
         return f;
     }
 
+    /**
+     * Aplica estilo de color y fuente a un JLabel.
+     *
+     * @param lbl JLabel a estilizar
+     */
     private void styleLabel(JLabel lbl) {
         lbl.setForeground(FG);
         lbl.setFont(new Font("Segoe UI", Font.PLAIN, 14));
     }
 
+    /**
+     * Carga y recorta circularmente la foto del equipo.
+     *
+     * @param e equipo cuyo avatar se muestra
+     * @param w ancho en píxeles
+     * @param h alto en píxeles
+     * @return ImageIcon circular o icono por defecto
+     */
     private ImageIcon cargarAvatarCircular(Equipo e, int w, int h) {
         try {
             byte[] foto = e.getFotoEquipo();
@@ -459,6 +471,14 @@ public class FichaEquipoVentana extends JDialog {
         return loadIcon("user_default.png", w, h);
     }
 
+    /**
+     * Carga y recorta circularmente el avatar de un usuario.
+     *
+     * @param u usuario cuyo avatar se muestra
+     * @param w ancho en píxeles
+     * @param h alto en píxeles
+     * @return ImageIcon circular o icono por defecto
+     */
     private ImageIcon cargarAvatar(Usuario u, int w, int h) {
         try {
             byte[] f = u.getFotoUsuario();
@@ -476,6 +496,15 @@ public class FichaEquipoVentana extends JDialog {
         } catch(Exception ignored){}
         return loadIcon("user_default.png", w, h);
     }
+
+    /**
+     * Carga un recurso de icono y lo escala.
+     *
+     * @param name nombre del recurso en assets
+     * @param w    ancho en píxeles
+     * @param h    alto en píxeles
+     * @return ImageIcon escalado o transparente si no se encuentra
+     */
     private ImageIcon loadIcon(String name, int w, int h) {
         URL res = getClass().getClassLoader().getResource("assets/"+name);
         Image img = (res != null)
