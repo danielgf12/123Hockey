@@ -17,37 +17,55 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
 
+/**
+ * Diálogo para crear un nuevo equipo. Permite establecer nombre, liga, categoría,
+ * club, ciudad, país y una foto opcional, y persiste el equipo en la base de datos.
+ *
+ * @author Daniel García
+ * @version 1.0
+ */
 public class CrearEquipoVentana extends JDialog {
+
     private static final Color BG     = new Color(18,18,18);
     private static final Color FG     = Color.WHITE;
     private static final Color ACCENT = new Color(49,141,225);
-    private static final int   MAX_PHOTO_BYTES = 1 * 1024 * 1024; // 1 MB
-
+    private static final int   MAX_PHOTO_BYTES = 1 * 1024 * 1024;
 
     private final Runnable onSuccess;
     private final Equipo newEquipo = new Equipo();
 
-    // Componentes de UI
     private JLabel lblFoto;
     private JTextField txtNombre, txtLiga, txtClub, txtCiudad, txtPais;
     private JComboBox<String> cbCategoria;
 
+    /**
+     * Construye el diálogo para crear un equipo y define la acción a ejecutar tras su creación.
+     *
+     * @param parent    ventana padre sobre la que se mostrará este diálogo
+     * @param onSuccess acción a ejecutar cuando el equipo se haya creado correctamente
+     */
     public CrearEquipoVentana(Frame parent, Runnable onSuccess) {
         super(parent, "Crear nuevo equipo", true);
         this.onSuccess = onSuccess;
-
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(500, 500);
         setLocationRelativeTo(parent);
         getContentPane().setBackground(BG);
         getContentPane().setLayout(new BorderLayout());
+        initUI();
+    }
 
-        // --- Encabezado: título arriba, foto abajo ---
+    /**
+     * Inicializa la interfaz de usuario: encabezado con foto y título,
+     * formulario con campos de texto y selector de categoría, y botones de acción.
+     */
+    private void initUI() {
         lblFoto = new JLabel(cargarAvatarCircular(null, 100, 100));
         lblFoto.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblFoto.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         lblFoto.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) {
+            @Override
+            public void mouseClicked(MouseEvent e) {
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileFilter(new FileNameExtensionFilter(
                         "Imágenes (jpg, png, gif)", "jpg","jpeg","png","gif"
@@ -94,7 +112,6 @@ public class CrearEquipoVentana extends JDialog {
 
         getContentPane().add(header, BorderLayout.NORTH);
 
-        // --- Cuerpo del formulario (2 columnas) ---
         JPanel content = new JPanel(new GridBagLayout());
         content.setBackground(BG);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -102,17 +119,14 @@ public class CrearEquipoVentana extends JDialog {
         gbc.anchor  = GridBagConstraints.WEST;
         gbc.fill    = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-
         int row = 0;
 
-        // Nombre
         gbc.gridy = row; gbc.gridx = 0;
         content.add(createLabel("Nombre:"), gbc);
         txtNombre = createField("");
         gbc.gridx = 1;
         content.add(txtNombre, gbc);
 
-        // Liga
         row++;
         gbc.gridy = row; gbc.gridx = 0;
         content.add(createLabel("Liga:"), gbc);
@@ -120,7 +134,6 @@ public class CrearEquipoVentana extends JDialog {
         gbc.gridx = 1;
         content.add(txtLiga, gbc);
 
-        // Categoría (ahora JComboBox)
         row++;
         gbc.gridy = row; gbc.gridx = 0;
         content.add(createLabel("Categoría:"), gbc);
@@ -135,7 +148,6 @@ public class CrearEquipoVentana extends JDialog {
         gbc.gridx = 1;
         content.add(cbCategoria, gbc);
 
-        // Club
         row++;
         gbc.gridy = row; gbc.gridx = 0;
         content.add(createLabel("Club:"), gbc);
@@ -143,7 +155,6 @@ public class CrearEquipoVentana extends JDialog {
         gbc.gridx = 1;
         content.add(txtClub, gbc);
 
-        // Ciudad
         row++;
         gbc.gridy = row; gbc.gridx = 0;
         content.add(createLabel("Ciudad:"), gbc);
@@ -151,7 +162,6 @@ public class CrearEquipoVentana extends JDialog {
         gbc.gridx = 1;
         content.add(txtCiudad, gbc);
 
-        // País
         row++;
         gbc.gridy = row; gbc.gridx = 0;
         content.add(createLabel("País:"), gbc);
@@ -161,7 +171,6 @@ public class CrearEquipoVentana extends JDialog {
 
         getContentPane().add(content, BorderLayout.CENTER);
 
-        // --- Botones de pie ---
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT,12,12));
         footer.setBackground(BG);
 
@@ -176,8 +185,11 @@ public class CrearEquipoVentana extends JDialog {
         getContentPane().add(footer, BorderLayout.SOUTH);
     }
 
+    /**
+     * Valida los campos del formulario, crea el objeto Equipo con los datos ingresados,
+     * lo persiste en la base de datos y notifica el éxito al usuario.
+     */
     private void crearEquipo() {
-        // Validar obligatorios
         if (txtNombre.getText().trim().isEmpty()
                 || txtLiga.getText().trim().isEmpty()
                 || cbCategoria.getSelectedItem() == null
@@ -190,7 +202,6 @@ public class CrearEquipoVentana extends JDialog {
             return;
         }
 
-        // Asignar datos
         newEquipo.setNombre(txtNombre.getText().trim());
         newEquipo.setLiga(txtLiga.getText().trim());
         newEquipo.setCategoria((String)cbCategoria.getSelectedItem());
@@ -198,7 +209,6 @@ public class CrearEquipoVentana extends JDialog {
         newEquipo.setCiudad(txtCiudad.getText().trim());
         newEquipo.setPais(txtPais.getText().trim());
 
-        // Guardar en BD
         try {
             new EquipoDAO().guardarEquipo(newEquipo);
         } catch (Exception ex) {
@@ -211,11 +221,16 @@ public class CrearEquipoVentana extends JDialog {
         JOptionPane.showMessageDialog(this,
                 "Equipo creado correctamente.",
                 "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
         dispose();
         onSuccess.run();
     }
 
+    /**
+     * Crea una etiqueta con estilo predeterminado.
+     *
+     * @param text texto a mostrar
+     * @return JLabel configurado con color y fuente estándar
+     */
     private JLabel createLabel(String text) {
         JLabel l = new JLabel(text);
         l.setForeground(FG);
@@ -223,12 +238,23 @@ public class CrearEquipoVentana extends JDialog {
         return l;
     }
 
+    /**
+     * Crea un campo de texto con estilo predeterminado.
+     *
+     * @param txt texto inicial a colocar en el campo
+     * @return JTextField configurado con color de fondo y borde estándar
+     */
     private JTextField createField(String txt) {
         JTextField f = new JTextField(txt);
         styleField(f);
         return f;
     }
 
+    /**
+     * Aplica estilo a un componente de texto (fondo, color, borde, fuente).
+     *
+     * @param f componente de texto a estilizar
+     */
     private void styleField(JTextComponent f) {
         f.setBackground(BG);
         f.setForeground(FG);
@@ -236,6 +262,14 @@ public class CrearEquipoVentana extends JDialog {
         f.setFont(new Font("Segoe UI", Font.PLAIN, 14));
     }
 
+    /**
+     * Carga y recorta una imagen de equipo en forma circular.
+     *
+     * @param e equipo cuyo avatar se mostrará (puede ser null para usar icono por defecto)
+     * @param w ancho deseado de la imagen
+     * @param h alto deseado de la imagen
+     * @return ImageIcon con la imagen recortada en círculo
+     */
     private ImageIcon cargarAvatarCircular(Equipo e, int w, int h) {
         try {
             byte[] foto = (e != null ? e.getFotoEquipo() : null);
@@ -249,12 +283,19 @@ public class CrearEquipoVentana extends JDialog {
                 g2.dispose();
                 return new ImageIcon(dst);
             }
-        } catch (Exception ignored) {}
-
-        // Icono por defecto de equipo
+        } catch (Exception ignored) {
+        }
         return loadIcon("user_default.png", w, h);
     }
 
+    /**
+     * Carga un icono desde recursos empaquetados y lo escala al tamaño indicado.
+     *
+     * @param name nombre del recurso dentro de assets (por ejemplo "user_default.png")
+     * @param w    ancho deseado del icono en píxeles
+     * @param h    alto deseado del icono en píxeles
+     * @return ImageIcon escalado o un ImageIcon vacío si no se encuentra el recurso
+     */
     private ImageIcon loadIcon(String name, int w, int h) {
         URL res = getClass().getClassLoader().getResource("assets/" + name);
         Image img = (res != null)
