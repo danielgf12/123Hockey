@@ -15,8 +15,21 @@ import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Ventana principal de la aplicación para el rol de Jugador.
+ * Muestra opciones de navegación y paneles informativos sobre
+ * próximos eventos y estadísticas del jugador.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class InicioJugadorVentana extends JFrame {
 
+    /**
+     * Construye e inicializa la ventana de inicio para el jugador.
+     *
+     * @param jugador instancia de Usuario con rol JUGADOR
+     */
     public InicioJugadorVentana(Usuario jugador) {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -29,39 +42,34 @@ public class InicioJugadorVentana extends JFrame {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         int W = screen.width, H = screen.height;
 
-        // Márgenes y proporciones
         int mX        = (int)(W * 0.04);
         int headerH   = (int)(H * 0.07);
         int sepY      = mX + headerH;
-        int btnY      = sepY + (int)(H * 0.04);            // +4%
+        int btnY      = sepY + (int)(H * 0.04);
         int btnW      = (int)(W * 0.28);
         int btnH      = (int)(H * 0.12);
         int gapX      = mX;
-        int panelY    = btnY + btnH + (int)(H * 0.04);     // +4%
+        int panelY    = btnY + btnH + (int)(H * 0.04);
         int panelGapX = mX;
         int panelW    = (W - 2*mX - panelGapX) / 2;
         int panelH    = (int)(H * 0.30);
-        int innerMX   = (int)(panelW * 0.08);              // 8% margen interior
+        int innerMX   = (int)(panelW * 0.08);
 
-        // ICONO menú
         JLabel menu = new JLabel(loadIcon("logoSinFondo.png", headerH-16, headerH-16));
         menu.setBounds(mX, mX, headerH-16, headerH-16);
         add(menu);
 
-        // TÍTULO
         JLabel title = new JLabel("123HOCKEY!");
         title.setFont(new Font("Arial Black", Font.BOLD, headerH/2 + 4));
         title.setForeground(new Color(49,109,233));
         title.setBounds(mX + headerH, mX-6, (int)(W*0.3), headerH);
         add(title);
 
-        // SEPARADOR
         JSeparator sep = new JSeparator();
         sep.setForeground(new Color(49,109,233));
         sep.setBounds(mX, sepY, W - 2*mX, 2);
         add(sep);
 
-        // AVATAR
         int avatarSize = headerH - 16;
         int avatarX    = W - mX - avatarSize;
         ImageIcon avatarIcon = cargarAvatar(jugador, avatarSize, avatarSize);
@@ -69,7 +77,6 @@ public class InicioJugadorVentana extends JFrame {
         avatar.setBounds(avatarX, mX, avatarSize, avatarSize);
         add(avatar);
 
-        // SALUDO (un poco más abajo y más grande)
         int greetW = avatarX - 2*mX + 30;
         JLabel hola = new JLabel("Hola, " + jugador.getNombre(), SwingConstants.RIGHT);
         hola.setFont(new Font("Segoe UI", Font.BOLD, headerH/2 - 2));
@@ -77,10 +84,8 @@ public class InicioJugadorVentana extends JFrame {
         hola.setBounds(mX, mX, greetW, avatarSize);
         add(hola);
 
-        // BOTONES (mantengo +20 para estética)
-        // ===== BOTONES REDONDEADOS INLINE CON HOVER Y PRESSED =====
-        int arcBtn   = btnH / 3;            // radio de las esquinas (~33% de la altura)
-        int bordBtn  = 2;                   // grosor del borde
+        int arcBtn   = btnH / 3;
+        int bordBtn  = 2;
         Color normalBg     = new Color(18, 18, 18);
         Color normalBorder = new Color(49, 109, 233);
         Color hoverBg      = new Color(49, 109, 233);
@@ -88,7 +93,6 @@ public class InicioJugadorVentana extends JFrame {
         Color pressBg      = new Color(142, 173, 233);
         Color pressBorder  = new Color(142, 173, 233);
 
-// Plantilla
         JButton btnPlantilla = new JButton("Plantilla") {
             @Override
             protected void paintComponent(Graphics g) {
@@ -96,7 +100,6 @@ public class InicioJugadorVentana extends JFrame {
                 Graphics2D g2 = (Graphics2D)g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
-
                 ButtonModel m = getModel();
                 Color bg, br;
                 if (m.isPressed()) {
@@ -106,21 +109,16 @@ public class InicioJugadorVentana extends JFrame {
                 } else {
                     bg = normalBg; br = normalBorder;
                 }
-
-                // Fondo redondeado
                 g2.setColor(bg);
                 g2.fillRoundRect(0, 0, w, h, arc, arc);
-
-                // Borde redondeado
                 g2.setStroke(new BasicStroke(bordBtn));
                 g2.setColor(br);
                 double off = bordBtn / 2.0;
                 g2.drawRoundRect((int)off, (int)off, w - bordBtn, h - bordBtn, arc, arc);
-
                 g2.dispose();
                 super.paintComponent(g);
             }
-            @Override protected void paintBorder(Graphics g) { /* nada */ }
+            @Override protected void paintBorder(Graphics g) { }
         };
         btnPlantilla.setOpaque(false);
         btnPlantilla.setContentAreaFilled(false);
@@ -132,13 +130,11 @@ public class InicioJugadorVentana extends JFrame {
         btnPlantilla.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnPlantilla.setBounds(mX, btnY + 20, btnW, btnH);
         btnPlantilla.addActionListener(e -> {
-            // 'entrenador' es el Usuario que recibiste en el constructor de esta clase
             new PlantillaVentana(jugador);
             dispose();
         });
         add(btnPlantilla);
 
-// Equipos
         JButton btnEquipos = new JButton("Equipos") {
             @Override
             protected void paintComponent(Graphics g) {
@@ -146,7 +142,6 @@ public class InicioJugadorVentana extends JFrame {
                 Graphics2D g2 = (Graphics2D)g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
-
                 ButtonModel m = getModel();
                 Color bg, br;
                 if (m.isPressed()) {
@@ -156,19 +151,16 @@ public class InicioJugadorVentana extends JFrame {
                 } else {
                     bg = normalBg; br = normalBorder;
                 }
-
                 g2.setColor(bg);
                 g2.fillRoundRect(0, 0, w, h, arc, arc);
-
                 g2.setStroke(new BasicStroke(bordBtn));
                 g2.setColor(br);
                 double off = bordBtn / 2.0;
                 g2.drawRoundRect((int)off, (int)off, w - bordBtn, h - bordBtn, arc, arc);
-
                 g2.dispose();
                 super.paintComponent(g);
             }
-            @Override protected void paintBorder(Graphics g) { /* nada */ }
+            @Override protected void paintBorder(Graphics g) { }
         };
         btnEquipos.setOpaque(false);
         btnEquipos.setContentAreaFilled(false);
@@ -180,13 +172,11 @@ public class InicioJugadorVentana extends JFrame {
         btnEquipos.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnEquipos.setBounds(mX + btnW + gapX, btnY + 20, btnW, btnH);
         btnEquipos.addActionListener(e -> {
-            // 'entrenador' es el Usuario que recibiste en el constructor de esta clase
             new EquiposVentana(jugador);
             dispose();
         });
         add(btnEquipos);
 
-// Calendario
         JButton btnCalendario = new JButton("Calendario") {
             @Override
             protected void paintComponent(Graphics g) {
@@ -194,7 +184,6 @@ public class InicioJugadorVentana extends JFrame {
                 Graphics2D g2 = (Graphics2D)g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
-
                 ButtonModel m = getModel();
                 Color bg, br;
                 if (m.isPressed()) {
@@ -204,19 +193,16 @@ public class InicioJugadorVentana extends JFrame {
                 } else {
                     bg = normalBg; br = normalBorder;
                 }
-
                 g2.setColor(bg);
                 g2.fillRoundRect(0, 0, w, h, arc, arc);
-
                 g2.setStroke(new BasicStroke(bordBtn));
                 g2.setColor(br);
                 double off = bordBtn / 2.0;
                 g2.drawRoundRect((int)off, (int)off, w - bordBtn, h - bordBtn, arc, arc);
-
                 g2.dispose();
                 super.paintComponent(g);
             }
-            @Override protected void paintBorder(Graphics g) { /* nada */ }
+            @Override protected void paintBorder(Graphics g) { }
         };
         btnCalendario.setOpaque(false);
         btnCalendario.setContentAreaFilled(false);
@@ -228,63 +214,42 @@ public class InicioJugadorVentana extends JFrame {
         btnCalendario.setFont(new Font("Segoe UI", Font.BOLD, (int)(btnH * 0.35)));
         btnCalendario.setBounds(mX + 2*(btnW + gapX), btnY + 20, btnW, btnH);
         btnCalendario.addActionListener(e -> {
-            // 'entrenador' es el Usuario que recibiste en el constructor de esta clase
             new CalendarioVentana(jugador);
             dispose();
         });
         add(btnCalendario);
 
-
-
-
-        // PANEL “PRÓXIMOS EVENTOS” (mantengo +35 y +100)
-        // Panel “Próximos eventos” con esquinas y borde redondeados inline
         JPanel pE = new JPanel(null) {
             @Override
             protected void paintComponent(Graphics g) {
                 int w = getWidth(), h = getHeight();
-                // arco = 20% de la altura (ajusta divisor para más o menos curvatura)
                 int arc = h / 10;
-
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
-
-                // 1) Fondo redondeado
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0, 0, w, h, arc, arc);
-
-                // 2) Borde redondeado (5px de grosor)
                 g2.setStroke(new BasicStroke(3));
                 g2.setColor(new Color(29, 29, 29));
                 double off = 5 / 2.0;
-                g2.drawRoundRect((int) off,
-                        (int) off,
-                        w - 5,
-                        h - 5,
-                        arc, arc);
-
+                g2.drawRoundRect((int)off, (int)off, w - 5, h - 5, arc, arc);
                 g2.dispose();
                 super.paintComponent(g);
             }
         };
         pE.setOpaque(false);
         pE.setBackground(new Color(18, 18, 18));
-// Ya no necesitamos setBorder(...) porque lo pintamos manualmente
         pE.setBounds(mX, panelY + 35, panelW, panelH + 100);
         add(pE);
 
-
-        // TÍTULO CENTRALIZADO
         JLabel tE = new JLabel("Próximos eventos", SwingConstants.CENTER);
         tE.setFont(new Font("Segoe UI", Font.BOLD, (int)((panelH+100) * 0.08)));
         tE.setForeground(Color.WHITE);
         int titleHt = tE.getPreferredSize().height;
         int titleTop = (int)((panelH+100) * 0.05);
-        tE.setBounds(innerMX, titleTop, panelW - 2*innerMX, titleHt);
+        tE.setBounds(innerMX(pE), titleTop, panelW - 2*innerMX(pE), titleHt);
         pE.add(tE);
 
-        // Distribución vertical de 2 filas
         int iconE    = (int)((panelH+100) * 0.16);
         int titleBot = titleTop + titleHt;
         int bottomM  = (int)((panelH+100) * 0.05);
@@ -294,10 +259,8 @@ public class InicioJugadorVentana extends JFrame {
 
         PartidoDAO        partidoDAO       = new PartidoDAO();
         EntrenamientoDAO  entDAO           = new EntrenamientoDAO();
-
-// Sólo los próximos del jugador
-        Partido           proximoPartido       = partidoDAO.obtenerProximoPartidoPorJugador(jugador.getId());
-        Entrenamiento     proximoEntrenamiento = entDAO.obtenerProximoEntrenamientoPorJugador(jugador.getId());
+        Partido           proximoPartido   = partidoDAO.obtenerProximoPartidoPorJugador(jugador.getId());
+        Entrenamiento     proximoEntreno   = entDAO.obtenerProximoEntrenamientoPorJugador(jugador.getId());
 
         SimpleDateFormat  dfFecha = new SimpleDateFormat("dd/MM");
         SimpleDateFormat  dfHora  = new SimpleDateFormat("HH:mm");
@@ -308,10 +271,10 @@ public class InicioJugadorVentana extends JFrame {
                 proximoPartido.getRival())
                 : "Próximo partido: -";
 
-        String textoEntreno = (proximoEntrenamiento != null)
+        String textoEntreno = (proximoEntreno != null)
                 ? String.format("Próximo entrenamiento: %s %s",
-                dfFecha.format(proximoEntrenamiento.getFecha()),
-                dfHora .format(proximoEntrenamiento.getFecha()))
+                dfFecha.format(proximoEntreno.getFecha()),
+                dfHora.format(proximoEntreno.getFecha()))
                 : "Próximo entrenamiento: -";
 
         String[] textosE = { textoPartido, textoEntreno };
@@ -319,176 +282,131 @@ public class InicioJugadorVentana extends JFrame {
 
         for (int i = 0; i < textosE.length; i++) {
             int y = titleBot + gapE * (i + 1) + iconE * i;
-            addIconAndText(
-                    pE,
-                    iconosE[i],
-                    textosE[i],
-                    innerMX(pE),
-                    y,
-                    iconE,
-                    panelW - 2 * innerMX(pE) - iconE,
-                    panelH + 100
-            );
+            addIconAndText(pE, iconosE[i], textosE[i], innerMX(pE), y, iconE,
+                    panelW - 2 * innerMX(pE) - iconE, panelH + 100);
         }
 
-
-        // PANEL “RESUMEN GENERAL”
         JPanel pR = new JPanel(null) {
             @Override
             protected void paintComponent(Graphics g) {
                 int w = getWidth(), h = getHeight();
-                // calcula un arco “grande” según el alto
-                int arc = h / 10; // 20% de la altura, prueba a ajustar este factor
-
+                int arc = h / 10;
                 Graphics2D g2 = (Graphics2D)g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
-
-                // 1) rellena el fondo con esquinas redondeadas
                 g2.setColor(getBackground());
                 g2.fillRoundRect(0, 0, w, h, arc, arc);
-
-                // 2) dibuja el borde con ese mismo arco
-                g2.setStroke(new BasicStroke(3));                  // grosor 5px
-                g2.setColor(new Color(29, 29, 29));                  // tu color de borde
-                // desplaza medio grosor para que el borde quede bien dentro
+                g2.setStroke(new BasicStroke(3));
+                g2.setColor(new Color(29, 29, 29));
                 double off = 5 / 2.0;
-                g2.drawRoundRect((int)off,
-                        (int)off,
-                        w - 5,
-                        h - 5,
-                        arc, arc);
-
+                g2.drawRoundRect((int)off, (int)off, w - 5, h - 5, arc, arc);
                 g2.dispose();
-                // luego pinta el contenido (labels, iconos…)
                 super.paintComponent(g);
             }
         };
-        pR.setOpaque(false);  // muy importante
+        pR.setOpaque(false);
         pR.setBackground(new Color(18,18,18));
-// Ya no necesitas setBorder(...) porque lo pintamos nosotros
-        pR.setBounds(mX + panelW + panelGapX,
-                panelY + 35,
-                panelW,
-                panelH + 100);
+        pR.setBounds(mX + panelW + panelGapX, panelY + 35, panelW, panelH + 100);
         add(pR);
-
 
         JLabel tR = new JLabel("Resumen general", SwingConstants.CENTER);
         tR.setFont(new Font("Segoe UI", Font.BOLD, (int)((panelH+100) * 0.08)));
         tR.setForeground(Color.WHITE);
-        tR.setBounds(innerMX, titleTop, panelW - 2*innerMX, titleHt);
+        tR.setBounds(innerMX(pR), titleTop, panelW - 2*innerMX(pR), titleHt);
         pR.add(tR);
 
-        // Distribución vertical de 3 filas
         int iconR    = (int)((panelH+100) * 0.13);
         int titleBotR= titleTop + titleHt;
         int availR   = (panelH+100) - titleBotR - bottomM;
         int rowsR    = 3;
         int gapR     = (availR - rowsR * iconR) / (rowsR + 1);
 
-
-        // ————— Datos dinámicos para el jugador —————
-        int idJugador = jugador.getId();  // o como tengas el ID
-
-// 1) Total de partidos jugados por este jugador
+        int idJugador = jugador.getId();
         JugadorInfoDAO jugadorInfoDAO = new JugadorInfoDAO();
-        jugadorInfoDAO.actualizarPartidosJugados(jugador.getId());
-
-        // Ahora recuperamos JugadorInfo para mostrar sus datos:
-        JugadorInfo ji = jugadorInfoDAO.buscarPorUsuario(jugador.getId());
+        jugadorInfoDAO.actualizarPartidosJugados(idJugador);
+        JugadorInfo ji = jugadorInfoDAO.buscarPorUsuario(idJugador);
         int totalPartidos = ji != null ? ji.getPartidosJugados() : 0;
 
-// 2) Total de entrenamientos a los que se le invitó (o existen en su equipo)
         AsistenciaDAO asisDAO = new AsistenciaDAO();
         List<Asistencia> asistencias = asisDAO.listarPorJugador(idJugador);
         int totalEntrenamientos = asistencias.size();
 
-// 3) % de asistencia real del jugador
-        // 1) Recupera los IDs de los equipos a los que pertenece el jugador
         EquipoJugadorDAO ejDao = new EquipoJugadorDAO();
         List<EquipoJugador> listaEqJug = ejDao.listarPorJugador(idJugador);
         List<Integer> equiposIds = listaEqJug.stream()
                 .map(ej -> ej.getEquipo().getId())
                 .collect(Collectors.toList());
 
-// 2) Trae todos los entrenamientos de esos equipos y filtra sólo los que ya pasaron
         EntrenamientoDAO entDao = new EntrenamientoDAO();
         Date ahora = new Date();
         List<Entrenamiento> entrenosPasados = equiposIds.stream()
                 .flatMap(eqId -> entDao.listarPorEquipo(eqId).stream())
                 .filter(e -> e.getFecha().before(ahora))
-                .distinct() // por si un jugador está en varios equipos y se repite el mismo entreno
+                .distinct()
                 .collect(Collectors.toList());
 
-// 3) Cuenta el total de entrenamientos pasados (ese será el 100%)
         int totalPasados = entrenosPasados.size();
-
-// 4) Cuenta cuántos de esos tiene registro de asistencia=true
-        AsistenciaDAO asisDao = new AsistenciaDAO();
         long asistidos = entrenosPasados.stream()
                 .filter(e -> {
-                    Asistencia a = asisDao.buscarPorEntrenamientoYJugador(e.getId(), idJugador);
+                    Asistencia a = asisDAO.buscarPorEntrenamientoYJugador(e.getId(), idJugador);
                     return a != null && a.isAsistencia();
                 })
                 .count();
 
-// 5) Calcula el porcentaje
         double mediaAsistencia = totalPasados > 0
                 ? (double)asistidos / totalPasados * 100
                 : 0;
 
-// Ahora puedes mostrar:
-// "Total entrenamientos pasados: " + totalPasados
-// "Entrenamientos asistidos: "      + asistidos
-// "Media asistencia: " + String.format("%.1f %%", mediaAsistencia)
-
-
-// 4) Array de textos ya dinámico
         String[] textosR = {
                 "Total partidos jugados: " + totalPartidos,
                 "Total entrenamientos: "   + totalEntrenamientos,
                 String.format("Media asistencia: %.1f %%", mediaAsistencia)
         };
-
-
         String[] iconosR = {"hockey_icon.png","board_icon.png","graph_icon.png"};
 
-        for(int i=0; i<rowsR; i++){
-            int y = titleBotR + gapR*(i+1) + iconR*i;
-            addIconAndText(
-                    pR,
-                    iconosR[i],
-                    textosR[i],
-                    innerMX, y, iconR,
-                    panelW - innerMX - iconR - innerMX,
-                    panelH+100
-            );
+        for (int i = 0; i < textosR.length; i++) {
+            int y = titleBotR + gapR * (i + 1) + iconR * i;
+            addIconAndText(pR, iconosR[i], textosR[i], innerMX(pR), y, iconR,
+                    panelW - 2 * innerMX(pR) - iconR, panelH + 100);
         }
 
         setVisible(true);
     }
 
+    /**
+     * Carga y recorta circularmente el avatar de un usuario.
+     *
+     * @param u usuario
+     * @param w ancho deseado
+     * @param h alto deseado
+     * @return icono redondeado o por defecto
+     */
     private ImageIcon cargarAvatar(Usuario u, int w, int h) {
-        try{
-            byte[] f=u.getFotoUsuario();
-            if (f!=null && f.length>0){
-                BufferedImage src=ImageIO.read(new ByteArrayInputStream(f));
-                BufferedImage dst=new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
-                Graphics2D g2=dst.createGraphics();
+        try {
+            byte[] f = u.getFotoUsuario();
+            if (f != null && f.length > 0) {
+                BufferedImage src = ImageIO.read(new ByteArrayInputStream(f));
+                BufferedImage dst = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2 = dst.createGraphics();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setClip(new Ellipse2D.Float(0,0,w,h));
-                g2.drawImage(src,0,0,w,h,null);
+                g2.setClip(new Ellipse2D.Float(0, 0, w, h));
+                g2.drawImage(src, 0, 0, w, h, null);
                 g2.dispose();
                 return new ImageIcon(dst);
             }
-        } catch(Exception ignored){}
-        return loadIcon("user_default.png",w,h);
+        } catch (Exception ignored) {}
+        return loadIcon("user_default.png", w, h);
     }
 
-
-    /** Carga y escala icono desde classpath o src/assets con SCALE_SMOOTH */
+    /**
+     * Carga un icono desde recursos y lo escala.
+     *
+     * @param name nombre del recurso en assets
+     * @param w    ancho deseado
+     * @param h    alto deseado
+     * @return icono escalado
+     */
     private ImageIcon loadIcon(String name, int w, int h) {
         URL u = getClass().getClassLoader().getResource("assets/" + name);
         Image img = (u != null)
@@ -497,7 +415,18 @@ public class InicioJugadorVentana extends JFrame {
         return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH));
     }
 
-    /** Añade un icono y un label centrado verticalmente */
+    /**
+     * Añade un icono y texto a un panel en posiciones específicas.
+     *
+     * @param panel     panel donde se añadirán
+     * @param iconFile  nombre del archivo de icono
+     * @param text      texto a mostrar
+     * @param x         coordenada X para el icono
+     * @param y         coordenada Y para el icono
+     * @param iconSize  tamaño del icono
+     * @param textWidth ancho disponible para el texto
+     * @param panelH    altura total del panel
+     */
     private void addIconAndText(JPanel panel, String iconFile, String text,
                                 int x, int y, int iconSize, int textWidth, int panelH) {
         ImageIcon icon = loadIcon(iconFile, iconSize, iconSize);
@@ -507,18 +436,33 @@ public class InicioJugadorVentana extends JFrame {
 
         JLabel lText = new JLabel(text);
         lText.setForeground(Color.WHITE);
-        lText.setFont(new Font("Segoe UI", Font.PLAIN, (int)(panelH*0.065)));
+        lText.setFont(new Font("Segoe UI", Font.PLAIN, (int)(panelH * 0.065)));
         int th = lText.getPreferredSize().height;
-        int ty = y + (iconSize - th)/2;
+        int ty = y + (iconSize - th) / 2;
         lText.setBounds(x + iconSize + innerMX(panel), ty, textWidth, th);
         panel.add(lText);
     }
 
-    /** Extrae innerMX para positioning de texto (8% de ancho del panel) */
+    /**
+     * Calcula el margen interior horizontal (8% del ancho del panel).
+     *
+     * @param panel panel de referencia
+     * @return margen interior en píxeles
+     */
     private int innerMX(JPanel panel) {
         return (int)(panel.getWidth() * 0.08);
     }
 
+    /**
+     * Crea un JButton con estilo uniforme.
+     *
+     * @param txt texto del botón
+     * @param x   posición X
+     * @param y   posición Y
+     * @param w   ancho
+     * @param h   alto
+     * @return botón formateado
+     */
     private JButton crearBoton(String txt, int x, int y, int w, int h) {
         JButton b = new JButton(txt);
         b.setBounds(x, y, w, h);
