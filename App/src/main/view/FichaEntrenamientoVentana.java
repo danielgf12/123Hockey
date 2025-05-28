@@ -17,6 +17,14 @@ import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 
+/**
+ * Ventana que muestra los detalles de un entrenamiento:
+ * permite ver y, si el rol es entrenador, editar o eliminar el entrenamiento,
+ * y gestionar la asistencia de los jugadores convocados.
+ * 
+ * @author Daniel García
+ * @version 1.0
+ */
 public class FichaEntrenamientoVentana extends JFrame {
     private static final Color BG     = new Color(18,18,18);
     private static final Color FG     = Color.WHITE;
@@ -28,8 +36,7 @@ public class FichaEntrenamientoVentana extends JFrame {
     private final AsistenciaDAO    asiDao = new AsistenciaDAO();
     private final EquipoJugadorDAO ejDao  = new EquipoJugadorDAO();
     private final EquipoDAO        eqDao  = new EquipoDAO();
-    private final JugadorInfoDAO infoDao = new JugadorInfoDAO();
-
+    private final JugadorInfoDAO   infoDao = new JugadorInfoDAO();
 
     private JComboBox<Equipo>                          cbEquipo;
     private JTextField                                 txtFecha;
@@ -45,6 +52,12 @@ public class FichaEntrenamientoVentana extends JFrame {
     private final SimpleDateFormat dfDate = new SimpleDateFormat("d/MM/yyyy");
     private final SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm");
 
+    /**
+     * Construye la ventana de ficha de entrenamiento y la muestra.
+     *
+     * @param usuarioLogado usuario autenticado
+     * @param entrenamiento entrenamiento a mostrar
+     */
     public FichaEntrenamientoVentana(Usuario usuarioLogado, Entrenamiento entrenamiento) {
         super("Ficha Entrenamiento");
         this.usuarioLogado = usuarioLogado;
@@ -52,17 +65,18 @@ public class FichaEntrenamientoVentana extends JFrame {
         initUI();
     }
 
+    /**
+     * Inicializa la interfaz de usuario, dispone los componentes y configura eventos.
+     */
     private void initUI() {
         Image appIcon = loadIcon("logoSinFondo.png",32,32).getImage();
         setIconImage(appIcon);
-        // Ventana
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(900, 600);
         setLocationRelativeTo(null);
         getContentPane().setBackground(BG);
         getContentPane().setLayout(new BorderLayout());
 
-        // Header
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(BG);
         header.setBorder(new EmptyBorder(10,20,10,20));
@@ -72,7 +86,6 @@ public class FichaEntrenamientoVentana extends JFrame {
         header.add(lblTitle, BorderLayout.CENTER);
         getContentPane().add(header, BorderLayout.NORTH);
 
-        // Centro: formulario
         JPanel center = new JPanel(new GridBagLayout());
         center.setBackground(BG);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -81,7 +94,6 @@ public class FichaEntrenamientoVentana extends JFrame {
         gbc.fill    = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        // Equipo
         gbc.gridx = 0; gbc.gridy = 0;
         center.add(createLabel("Equipo:"), gbc);
         gbc.gridx = 1;
@@ -94,7 +106,6 @@ public class FichaEntrenamientoVentana extends JFrame {
                 return this;
             }
         });
-        // Preseleccionar por ID
         int idActual = entrenamiento.getEquipo().getId();
         for (int i = 0; i < equipos.size(); i++) {
             if (equipos.get(i).getId() == idActual) {
@@ -104,28 +115,24 @@ public class FichaEntrenamientoVentana extends JFrame {
         }
         center.add(cbEquipo, gbc);
 
-        // Fecha
         gbc.gridx = 0; gbc.gridy = 1;
         center.add(createLabel("Fecha (d/MM/yyyy):"), gbc);
         gbc.gridx = 1;
         txtFecha = new JTextField(dfDate.format(entrenamiento.getFecha()));
         center.add(txtFecha, gbc);
 
-        // Hora
         gbc.gridx = 0; gbc.gridy = 2;
         center.add(createLabel("Hora (HH:mm):"), gbc);
         gbc.gridx = 1;
         txtHora = new JTextField(dfTime.format(entrenamiento.getFecha()));
         center.add(txtHora, gbc);
 
-        // Ubicación
         gbc.gridx = 0; gbc.gridy = 3;
         center.add(createLabel("Ubicación:"), gbc);
         gbc.gridx = 1;
         txtUbicacion = new JTextField(entrenamiento.getUbicacion());
         center.add(txtUbicacion, gbc);
 
-        // Repetir
         gbc.gridx = 0; gbc.gridy = 4;
         center.add(createLabel("Repetir:"), gbc);
         gbc.gridx = 1;
@@ -133,7 +140,6 @@ public class FichaEntrenamientoVentana extends JFrame {
         cbRepetir.setSelectedItem(entrenamiento.getRepetir());
         center.add(cbRepetir, gbc);
 
-        // Tipo
         gbc.gridx = 0; gbc.gridy = 5;
         center.add(createLabel("Tipo:"), gbc);
         gbc.gridx = 1;
@@ -141,7 +147,6 @@ public class FichaEntrenamientoVentana extends JFrame {
         cbTipo.setSelectedItem(entrenamiento.getTipoEntrenamiento());
         center.add(cbTipo, gbc);
 
-        // Observaciones
         gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 2;
         center.add(createLabel("Observaciones:"), gbc);
         gbc.gridy = 7; gbc.fill = GridBagConstraints.BOTH; gbc.weighty = 1.0;
@@ -157,7 +162,6 @@ public class FichaEntrenamientoVentana extends JFrame {
 
         getContentPane().add(center, BorderLayout.CENTER);
 
-        // Derecha: lista de asistencia
         java.util.List<Asistencia> listaAsist = asiDao.listarPorEntrenamiento(entrenamiento.getId());
         Map<Integer,Asistencia> mapaAsist = new HashMap<>();
         for (Asistencia a : listaAsist) {
@@ -197,7 +201,6 @@ public class FichaEntrenamientoVentana extends JFrame {
                     reference[0].setAsistencia(sel);
                     asiDao.actualizarAsistencia(reference[0]);
                 }
-                // ——> Aquí actualizamos jugador_info:
                 if (sel) {
                     JugadorInfo info = infoDao.buscarPorUsuarioId(jug.getId());
                     if (info != null) {
@@ -207,12 +210,11 @@ public class FichaEntrenamientoVentana extends JFrame {
                 } else {
                     JugadorInfo info = infoDao.buscarPorUsuarioId(jug.getId());
                     if (info != null && info.getAsistenciaObligatoria() > 0) {
-                    info.setAsistenciaObligatoria(info.getAsistenciaObligatoria() - 1);
-                    infoDao.actualizarJugadorInfo(info);
+                        info.setAsistenciaObligatoria(info.getAsistenciaObligatoria() - 1);
+                        infoDao.actualizarJugadorInfo(info);
                     }
                 }
             });
-
 
             asistenciaPanel.add(cb);
         }
@@ -222,7 +224,6 @@ public class FichaEntrenamientoVentana extends JFrame {
         scrollAs.setBorder(null);
         getContentPane().add(scrollAs, BorderLayout.EAST);
 
-        // Footer: editar/guardar + eliminar o cerrar
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT,12,12));
         footer.setBackground(BG);
 
@@ -253,17 +254,19 @@ public class FichaEntrenamientoVentana extends JFrame {
 
         getContentPane().add(footer, BorderLayout.SOUTH);
 
-        // Inicialmente deshabilitados
         setFieldsEditable(false);
         setVisible(true);
     }
 
+    /**
+     * Alterna entre modo edición y visualización. Si se sale de edición,
+     * valida y guarda los cambios realizados en el entrenamiento.
+     */
     private void toggleEditSave() {
         editing = !editing;
         setFieldsEditable(editing);
         btnEditSave.setText(editing ? "Guardar cambios" : "Editar datos");
         if (!editing) {
-            // Guardar cambios
             try {
                 Date d = dfDate.parse(txtFecha.getText().trim());
                 Date t = dfTime.parse(txtHora.getText().trim());
@@ -290,6 +293,11 @@ public class FichaEntrenamientoVentana extends JFrame {
         }
     }
 
+    /**
+     * Habilita o deshabilita la edición de los campos del formulario.
+     *
+     * @param e true para habilitar edición, false para deshabilitarla
+     */
     private void setFieldsEditable(boolean e) {
         cbEquipo.setEnabled(e);
         txtFecha.setEditable(e);
@@ -300,6 +308,12 @@ public class FichaEntrenamientoVentana extends JFrame {
         txtObservaciones.setEditable(e);
     }
 
+    /**
+     * Crea un JLabel con estilo estándar para etiquetas de formulario.
+     *
+     * @param text texto a mostrar en la etiqueta
+     * @return JLabel configurado con fuente y color apropiados
+     */
     private JLabel createLabel(String text) {
         JLabel l = new JLabel(text);
         l.setForeground(FG);
@@ -307,6 +321,11 @@ public class FichaEntrenamientoVentana extends JFrame {
         return l;
     }
 
+    /**
+     * Aplica estilo a un botón para apariencia coherente en la interfaz.
+     *
+     * @param b botón a estilizar
+     */
     private void styleButton(JButton b) {
         b.setFont(new Font("Segoe UI", Font.BOLD, 14));
         b.setForeground(FG);
@@ -315,6 +334,14 @@ public class FichaEntrenamientoVentana extends JFrame {
         b.setBorder(BorderFactory.createEmptyBorder(6,12,6,12));
     }
 
+    /**
+     * Carga un icono desde recursos empaquetados y lo escala al tamaño indicado.
+     *
+     * @param name nombre del recurso dentro de assets (por ejemplo "logoSinFondo.png")
+     * @param w    ancho deseado en píxeles
+     * @param h    alto deseado en píxeles
+     * @return ImageIcon escalado, o un icono transparente si no se encuentra el recurso
+     */
     private ImageIcon loadIcon(String name,int w,int h){
         URL u = getClass().getClassLoader().getResource("assets/"+name);
         Image img = (u!=null)
@@ -322,5 +349,4 @@ public class FichaEntrenamientoVentana extends JFrame {
                 : new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
         return new ImageIcon(img.getScaledInstance(w,h,Image.SCALE_SMOOTH));
     }
-
 }
