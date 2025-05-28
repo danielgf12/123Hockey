@@ -22,6 +22,14 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
+/**
+ * Ventana principal que muestra el calendario de entrenamientos y partidos para el usuario autenticado.
+ *
+ * Permite filtrar eventos por fecha y tipo, y crear nuevos eventos si el usuario tiene rol de entrenador.
+ *
+ * @author Daniel García
+ * @version 1.0
+ */
 public class CalendarioVentana extends JFrame {
     private static final Color BG     = new Color(18,18,18);
     private static final Color FG     = Color.WHITE;
@@ -34,24 +42,29 @@ public class CalendarioVentana extends JFrame {
     private JButton    btnFiltrar, btnNuevoEntrenamiento, btnNuevoPartido;
     private JPanel     inner;
 
-    // — Variables para el filtro por tipo —
     private Set<String> selectedTipos;
     private JPopupMenu tipoMenu;
 
-    // — Dimensiones y márgenes —
     private int W, H, mX, headerH, sepY, ctrlY, ctrlH;
 
+    /**
+     * Construye la ventana de calendario para el usuario especificado.
+     *
+     * @param usuario usuario autenticado para el cual se muestra el calendario
+     */
     public CalendarioVentana(Usuario usuario) {
         super("123Hockey – Calendario");
         this.usuarioLogado = usuario;
         initUI();
     }
 
+    /**
+     * Configura los componentes de la interfaz de usuario, inicializa datos y hace visible la ventana.
+     */
     private void initUI() {
         Image appIcon = loadIcon("logoSinFondo.png",32,32).getImage();
         setIconImage(appIcon);
 
-        // — Calcula tamaños basados en pantalla —
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         W       = screen.width;
         H       = screen.height;
@@ -61,13 +74,11 @@ public class CalendarioVentana extends JFrame {
         ctrlY   = mX + headerH + 80;
         ctrlH   = (int)(headerH / 1.5);
 
-        // — Configuración de la ventana —
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         getContentPane().setBackground(BG);
         setLayout(null);
 
-        // ← “volver”
         JLabel back = new JLabel(loadIcon("arrow_back.png", headerH-16, headerH-16));
         back.setBounds(mX, mX+4, headerH-16, headerH-16);
         back.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -86,41 +97,35 @@ public class CalendarioVentana extends JFrame {
         });
         add(back);
 
-        // “123HOCKEY!”
         JLabel title = new JLabel("123HOCKEY!");
         title.setFont(new Font("Arial Black",Font.BOLD, headerH/2 + 4));
         title.setForeground(ACCENT);
         title.setBounds(mX + headerH, mX - 6, (int)(W*0.3), headerH);
         add(title);
 
-        // Separador azul
         JSeparator sep = new JSeparator();
         sep.setForeground(ACCENT);
         sep.setBounds(mX, sepY, W - 2*mX, 2);
         add(sep);
 
-        // Avatar circular
         int avatarSize = headerH - 16;
         int avatarX    = W - mX - avatarSize;
         JLabel avatar  = new JLabel(cargarAvatar(usuarioLogado, avatarSize, avatarSize));
         avatar.setBounds(avatarX, mX, avatarSize, avatarSize);
         add(avatar);
 
-        // “Hola, <Nombre>”
         JLabel hola = new JLabel("Hola, " + usuarioLogado.getNombre(), SwingConstants.RIGHT);
         hola.setFont(new Font("Segoe UI",Font.BOLD, headerH/2 - 2));
         hola.setForeground(ACCENT);
         hola.setBounds(mX, mX, avatarX - 2*mX + 30, avatarSize);
         add(hola);
 
-        // Título de sección
         JLabel lblSec = new JLabel("Calendario");
         lblSec.setFont(new Font("Segoe UI",Font.BOLD, headerH));
         lblSec.setForeground(FG);
         lblSec.setBounds(mX, mX + headerH + 17, 350, headerH+10);
         add(lblSec);
 
-        // — Campo de búsqueda por fecha —
         int arcField   = 15, bordField = 1;
         Color fieldBg     = BG;
         Color fieldBorder = ACCENT;
@@ -176,10 +181,8 @@ public class CalendarioVentana extends JFrame {
         });
         add(txtFechaBuscar);
 
-        // — Botones debajo del título —
         int btnX = mX + (int)(W*0.3) + 20;
 
-        // Inicializa el conjunto y el menú de tipos
         selectedTipos = new HashSet<>(Arrays.asList("Entrenamiento","Partido"));
         tipoMenu = new JPopupMenu();
         JCheckBoxMenuItem itmEnt = new JCheckBoxMenuItem("Entrenamiento", true);
@@ -199,7 +202,6 @@ public class CalendarioVentana extends JFrame {
 
         btnFiltrar = makeButton("Filtrar");
         btnFiltrar.setBounds(btnX, ctrlY+5, 100, ctrlH);
-        // Mostrar menú al pulsar, no acción directa
         btnFiltrar.addMouseListener(new MouseAdapter(){
             @Override public void mousePressed(MouseEvent e){
                 tipoMenu.show(btnFiltrar, 0, btnFiltrar.getHeight());
@@ -226,22 +228,19 @@ public class CalendarioVentana extends JFrame {
             btnNuevoPartido = makeButton("Nuevo partido");
             btnNuevoPartido.setBounds(btnX + 360, ctrlY+5, 220, ctrlH);
             btnNuevoPartido.addActionListener(e -> {
-                // Abrir diálogo para crear un partido, y al cerrar recargar datos y lista
                 CrearPartidoVentana dialog = new CrearPartidoVentana(
-                        CalendarioVentana.this,    // ventana padre
-                        usuarioLogado,             // usuario actual
-                        () -> {                    // callback tras guardar
+                        CalendarioVentana.this,
+                        usuarioLogado,
+                        () -> {
                             cargarDatos();
                             filtrar();
                         }
                 );
-                // El constructor de CrearPartidoVentana ya hace setVisible(true)
             });
 
             add(btnNuevoPartido);
         }
 
-        // — Panel interno y scroll —
         inner = new JPanel();
         inner.setLayout(new BoxLayout(inner, BoxLayout.Y_AXIS));
         inner.setBackground(BG);
@@ -252,12 +251,17 @@ public class CalendarioVentana extends JFrame {
         scroll.setBorder(null);
         add(scroll);
 
-        // Carga inicial
         cargarDatos();
         filtrar();
         setVisible(true);
     }
 
+    /**
+     * Crea un botón con estilo personalizado redondeado y efectos de resaltado.
+     *
+     * @param text texto que se mostrará en el botón
+     * @return JButton configurado con los estilos definidos
+     */
     private JButton makeButton(String text){
         JButton btn = new JButton(text){
             @Override protected void paintComponent(Graphics g){
@@ -290,6 +294,10 @@ public class CalendarioVentana extends JFrame {
         return btn;
     }
 
+    /**
+     * Carga los eventos de entrenamientos y partidos desde la base de datos según el rol del usuario
+     * y los ordena por fecha.
+     */
     private void cargarDatos(){
         eventos.clear();
         EquipoDAO eqDao = new EquipoDAO();
@@ -297,8 +305,6 @@ public class CalendarioVentana extends JFrame {
         PartidoDAO parDao = new PartidoDAO();
         EquipoJugadorDAO ejDao = new EquipoJugadorDAO();
         entDao.generarRepeticionesPendientes();
-
-
 
         switch(usuarioLogado.getRol()){
             case ENTRENADOR:
@@ -340,6 +346,10 @@ public class CalendarioVentana extends JFrame {
         eventos.sort(Comparator.comparing(ev->ev.fecha));
     }
 
+    /**
+     * Filtra y muestra los eventos próximos y pasados en la interfaz según la fecha buscada
+     * y los tipos de evento seleccionados.
+     */
     private void filtrar() {
         inner.removeAll();
         Date now = new Date();
@@ -350,21 +360,16 @@ public class CalendarioVentana extends JFrame {
         String t   = raw.equalsIgnoreCase("Buscar por fecha…")
                 ? "" : raw.toLowerCase();
 
-        // Próximos
         inner.add(sectionHeader("Próximos"));
         for (Evento ev : eventos) {
-            // filtro por tipo
             if (ev.isPartido && !selectedTipos.contains("Partido")) continue;
             if (!ev.isPartido && !selectedTipos.contains("Entrenamiento")) continue;
-            // filtro por pasado o futuro
             if (ev.fecha.before(now)) continue;
-            // filtro por fecha texto
             if (!t.isEmpty()
                     && !dfDate.format(ev.fecha).toLowerCase().contains(t)) continue;
             inner.add(eventRow(ev, dfDate, dfTime));
         }
 
-        // Pasados
         inner.add(sectionHeader("Pasados"));
         for (Evento ev : eventos) {
             if (ev.isPartido && !selectedTipos.contains("Partido")) continue;
@@ -379,6 +384,12 @@ public class CalendarioVentana extends JFrame {
         inner.repaint();
     }
 
+    /**
+     * Crea un panel de encabezado de sección con un título dado.
+     *
+     * @param text texto del encabezado de sección
+     * @return JPanel que contiene el encabezado formateado
+     */
     private JPanel sectionHeader(String text){
         JLabel lbl = new JLabel(text);
         lbl.setFont(new Font("Segoe UI",Font.BOLD,24));
@@ -390,6 +401,14 @@ public class CalendarioVentana extends JFrame {
         return p;
     }
 
+    /**
+     * Crea una fila de evento para mostrar en la lista, con icono, fecha, hora y enlace de detalle.
+     *
+     * @param ev evento a representar (entrenamiento o partido)
+     * @param dfDate formateador para la fecha
+     * @param dfTime formateador para la hora
+     * @return JPanel con la fila del evento
+     */
     private JPanel eventRow(Evento ev, SimpleDateFormat dfDate, SimpleDateFormat dfTime){
         JPanel p = new JPanel(null);
         p.setPreferredSize(new Dimension(0,80));
@@ -442,6 +461,14 @@ public class CalendarioVentana extends JFrame {
         return p;
     }
 
+    /**
+     * Carga y recorta la imagen de avatar del usuario en forma circular.
+     *
+     * @param u usuario cuyo avatar se cargará
+     * @param w ancho deseado de la imagen
+     * @param h alto deseado de la imagen
+     * @return ImageIcon con la imagen del avatar recortada, o un icono predeterminado si no existe foto
+     */
     private ImageIcon cargarAvatar(Usuario u, int w, int h){
         try{
             byte[] f = u.getFotoUsuario();
@@ -465,6 +492,14 @@ public class CalendarioVentana extends JFrame {
         return loadIcon("user_default.png",w,h);
     }
 
+    /**
+     * Carga un icono desde los recursos empaquetados y lo escala al tamaño indicado.
+     *
+     * @param name nombre del archivo de imagen dentro de la carpeta assets
+     * @param w ancho deseado del icono
+     * @param h alto deseado del icono
+     * @return ImageIcon con la imagen escalada
+     */
     private ImageIcon loadIcon(String name, int w, int h){
         URL u = getClass().getClassLoader()
                 .getResource("assets/"+name);
@@ -476,11 +511,23 @@ public class CalendarioVentana extends JFrame {
         ));
     }
 
+    /**
+     * Clase que representa un evento de calendario, ya sea entrenamiento o partido.
+     */
     private static class Evento {
         final boolean       isPartido;
         final Date          fecha;
         final Entrenamiento entrenamiento;
         final Partido       partido;
+
+        /**
+         * Construye un nuevo Evento.
+         *
+         * @param isPartido     true si es un partido, false si es un entrenamiento
+         * @param fecha         fecha y hora del evento
+         * @param e             objeto Entrenamiento asociado, o null si es un partido
+         * @param p             objeto Partido asociado, o null si es un entrenamiento
+         */
         Evento(boolean isPartido, Date fecha,
                Entrenamiento e, Partido p){
             this.isPartido     = isPartido;
