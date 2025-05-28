@@ -54,7 +54,7 @@ public class RegistroVentana extends JFrame {
         getContentPane().setBackground(new Color(18, 18, 18));
         setLayout(null);
 
-        ImageIcon icono = new ImageIcon("src/assets/logoSinFondo.png");
+        ImageIcon icono = loadIcon("logoSinFondo.png", 420, 420);
         Image imagenEscalada = icono.getImage().getScaledInstance(420, 420, Image.SCALE_SMOOTH);
         JLabel imagen = new JLabel(new ImageIcon(imagenEscalada));
         imagen.setBounds(175, 170, 420, 420);
